@@ -15,10 +15,11 @@
 
 #define PDC_DLL_BUILD 1
 
-#define BACKSPACE 8
-#define CTRL_E 5
-#define CTRL_S 19
-#define NEWLINE 10
+#define BACKSPACE   8
+#define CTRL_E      5
+#define CTRL_S      19
+#define CTRL_SPACE  32
+#define NEWLINE     10
 
 using namespace std;
 
@@ -29,6 +30,8 @@ WINDOW* setBorders(char* file_name);
 WINDOW* setInputWindow();
 //Setter function for input window.
 //Requires external winddow refresh.
+
+WINDOW* setAutoFillWindow();
 
 void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
@@ -79,6 +82,7 @@ int main(int argc, char* argv[])
 	//Set windows
 	WINDOW* borders_window = setBorders(argv[1]);
 	WINDOW* input_window = setInputWindow();
+	WINDOW* auto_fill_window = setAutoFillWindow();
 
 	//Output vector into input window
 	outputVector(input_window, 0, 0, text);
@@ -99,8 +103,8 @@ int main(int argc, char* argv[])
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
-	//This variable is for scrolling between lines of different sizes
-	int scroll_index_buffer = 0;
+	//This variable may be used for scrolling between lines of different sizes
+	//int scroll_index_buffer = 0;
 
 	//Iterators to point to user edit location in vector for inserts.
 	//Currently using these inside of the insert function, may find a 
@@ -175,12 +179,12 @@ int main(int argc, char* argv[])
 				{
 					break;
 				}
-				//Temporary check: if line is not the last line in the vector,
-				//                 and the line below is smaller than current line, 
-				//                 do nothing
+				//NOT WORKING PROPERLY
 				//TODO: move cursor approriately in this case
 				else if (text[current_line_num + 1].size() <= current_line_index)
 				{
+					break;
+					/*
 					//Grab size difference between lines
 					scroll_index_buffer = text[current_line_num].size() - text[current_line_num + 1].size();
 
@@ -202,8 +206,7 @@ int main(int argc, char* argv[])
 					//Output vector and grab new y,x of window cursor
 					outputVector(input_window, render_line_start, render_index_start, text);
 					getyx(input_window, input_cursor_y, input_cursor_x);
-
-					break;
+					*/
 				}
 				//If cursor is not in the last line and is at the bottom of the window,
 				//scroll down by one line
@@ -334,9 +337,15 @@ int main(int argc, char* argv[])
 				wmove(input_window, input_cursor_y, input_cursor_x);
 				break;
 
+			//SAVE COMMAND
 			case CTRL_S:
 				writeVectorToFile(output_file, text);
 				break;
+			
+			//AUTOFILL COMMAND
+			case CTRL_SPACE:
+				mvwin(auto_fill_window, input_cursor_y, input_cursor_x);
+				wrefresh(auto_fill_window);
 
 			//DEFAULT: insert character		
 			default:
@@ -422,6 +431,14 @@ WINDOW* setInputWindow()
 	return input;
 }
 
+WINDOW* setAutoFillWindow()
+{
+	WINDOW* auto_fill;
+	auto_fill = newwin(7, 20, 0, 0);
+	box(auto_fill, 0, 0);
+	return auto_fill;
+}
+
 void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text)
 {
 	vector<chtype> line{};
@@ -441,7 +458,7 @@ void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text)
 				line.clear();
 			}
 			//If any other non-EOF char, push to current line
-			else if(current != EOF)
+			else if (current != EOF)
 			{
 				line.push_back(current);
 			}
@@ -485,7 +502,6 @@ void outputVector(WINDOW* window, int line_num, int line_index, const vector<vec
 		for (int j = line_index; j < text[i].size() && output_cursor_x < window->_maxx; j++)
 		{
 			mvwaddch(window, output_cursor_y, output_cursor_x, text[i][j]);
-			//wrefresh(window);
 			output_cursor_x++;
 		}
 		output_cursor_x = 0;

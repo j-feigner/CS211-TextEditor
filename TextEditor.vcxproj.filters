@@ -53,5 +53,8 @@
     <Text Include="test_output.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="test_keywords.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
