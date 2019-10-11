@@ -90,15 +90,17 @@ int main(int argc, char* argv[])
 	/* Input Variables */
 	//Grabs input char from user
 	int user_input = 0;
-	//Tracks location of user cursor in input window
+	//Tracks location of user cursor IN WINDOW
 	int input_cursor_y = 0;
 	int input_cursor_x = 0;
-	//Tracks location of user input location in vector (i, j)
-	long int current_line_num = 0;
-	long int current_line_index = 0;
+	//Tracks location of user input location IN VECTOR (i, j)
+	int current_line_num = 0;
+	int current_line_index = 0;
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
+	//This variable is for scrolling between lines of different sizes
+	int scroll_index_buffer = 0;
 
 	//Iterators to point to user edit location in vector for inserts.
 	//Currently using these inside of the insert function, may find a 
@@ -173,9 +175,34 @@ int main(int argc, char* argv[])
 				{
 					break;
 				}
-				//TEMPORARY CHECK: if line below is smaller than current line, do nothing
+				//Temporary check: if line is not the last line in the vector,
+				//                 and the line below is smaller than current line, 
+				//                 do nothing
+				//TODO: move cursor approriately in this case
 				else if (text[current_line_num + 1].size() <= current_line_index)
 				{
+					//Grab size difference between lines
+					scroll_index_buffer = text[current_line_num].size() - text[current_line_num + 1].size();
+
+					//Move edit location index back by size difference and increment edit location line number
+					current_line_index -= scroll_index_buffer;
+					current_line_num++;
+
+					//Set new render point
+					if (render_index_start <= scroll_index_buffer)
+					{
+						render_index_start = 0;
+					}
+					else
+					{
+						render_index_start -= scroll_index_buffer;
+					}
+					render_line_start++;
+
+					//Output vector and grab new y,x of window cursor
+					outputVector(input_window, render_line_start, render_index_start, text);
+					getyx(input_window, input_cursor_y, input_cursor_x);
+
 					break;
 				}
 				//If cursor is not in the last line and is at the bottom of the window,
@@ -413,8 +440,8 @@ void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text)
 				text.push_back(line);
 				line.clear();
 			}
-			//If any other char, push to current line
-			else
+			//If any other non-EOF char, push to current line
+			else if(current != EOF)
 			{
 				line.push_back(current);
 			}
