@@ -84,6 +84,12 @@ int main(int argc, char* argv[])
 	WINDOW* input_window = setInputWindow();
 	WINDOW* auto_fill_window = setAutoFillWindow();
 
+	//Associate windows with panel deck 
+	PANEL* panels[3];
+	panels[0] = new_panel(borders_window);      //BOTTOM OF DECK
+	panels[1] = new_panel(input_window);        //-
+	panels[2] = new_panel(auto_fill_window);    //TOP OF DECK
+
 	//Output vector into input window
 	outputVector(input_window, 0, 0, text);
 
@@ -344,8 +350,8 @@ int main(int argc, char* argv[])
 			
 			//AUTOFILL COMMAND
 			case CTRL_SPACE:
-				mvwin(auto_fill_window, input_cursor_y, input_cursor_x);
-				wrefresh(auto_fill_window);
+				move_panel(panels[2], input_cursor_y, input_cursor_x);
+				update_panels();
 
 			//DEFAULT: insert character		
 			default:
