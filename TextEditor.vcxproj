@@ -126,16 +126,27 @@
     <ClInclude Include="curses.h" />
     <ClInclude Include="curspriv.h" />
     <ClInclude Include="panel.h" />
+    <ClInclude Include="text.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="pdcurses.dll" />
-    <None Include="pdcurses.exp" />
+    <None Include="pdcurses.dll">
+      <DeploymentContent>false</DeploymentContent>
+    </None>
+    <None Include="pdcurses.exp">
+      <DeploymentContent>false</DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="pdcurses.lib" />
+    <Library Include="pdcurses.lib">
+      <DeploymentContent>false</DeploymentContent>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="test_input.txt" />
+    <Text Include="test_output.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

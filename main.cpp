@@ -1,10 +1,19 @@
-#define PDC_DLL_BUILD 1
-
+#ifdef _WIN32
+//Windows includes
 #include "curses.h"
-//#include "text.hpp"
-#include <string>
+#include "panel.h"
+#include "curspriv.h"
+#else
+//Linux / MacOS includes
+#include <curses.h>
+#endif
+
 #include <vector>
+#include <string>
 #include <fstream>
+#include <sstream>
+
+#define PDC_DLL_BUILD 1
 
 #define BACKSPACE 8
 #define CTRL_E 5
@@ -85,8 +94,8 @@ int main(int argc, char* argv[])
 	int input_cursor_y = 0;
 	int input_cursor_x = 0;
 	//Tracks location of user input location in vector (i, j)
-	int current_line_num = 0;
-	int current_line_index = 0;
+	long int current_line_num = 0;
+	long int current_line_index = 0;
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
