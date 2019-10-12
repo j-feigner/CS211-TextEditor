@@ -1,2 +1,11 @@
-# Design Diary
-Use this space to talk about your process.  For inspiration, see [my prompts](../../../docs/sample_reflection.md) 
+# Milestone 1 Design Diary
+
+The biggest issue I’ve faced so far in beginning the design process on my text editor is simply getting used to working with someone else’s code. This is the first time I have needed to really wrestle with a library I wasn’t familiar with and understand how its functions work and interact. It’s common, and oftentimes fun, to reinvent the wheel on every new CS assignment; to deal with the nitty gritty details of coding. But interacting with a fully-fledged library like Curses has allowed me to think about larger scale problems in the design; like how the GUI is going to be laid out, how that GUI design will reflect later on user input etc. This type of problem solving is refreshing, and very distinct from other problems I have tackled in CS so far. 
+  
+However, this freedom can also be intimidating. Sometimes small problems aren’t easy to solve when working with a relatively niche code library like Curses. For example, even after digging through the header file and the manual, I still cannot find a #define for ctrl-modified characters in Curses. Every other keypad character seems to have a pretty identifier, except these. Ctrl-E (my command for exit) returns 5 from getch(), so I’ll just use that magic number until I stumble on the answer somewhere down the line. These types of small issues are much harder to track down in this type of environment, as opposed to standard C++ libraries, that enjoy rigorous documentation and decades of students discussing problems they have faced using them.
+  
+For my specific text editor, I decided early on that I would be following the general GUI outline of nano. I appreciated the clean design and I prefer having all the possible commands for the editor listed plainly, rather than being hidden in a drop down or help menu.
+  
+As such, my text editor’s GUI, like nano, has two main sections; the status bar and the bottom border (command bar). The status bar displays the name of the program and will eventually display the current file or directory path, and the command bar contains a list of commands that will eventually be available in my editor. This general design might shift a little as my skills with Curses develop, but for my current skill level, I am happy with my current look. I am also happy I was able to isolate my GUI elements into their own windows. The status bars are in their own window, and I have very basic user input echoing to another independent window.
+
+In the coming days I hope to make this input system more robust, and begin to experiment with file i/o.
