@@ -31,7 +31,7 @@ WINDOW* setInputWindow();
 //Setter function for input window.
 //Requires external winddow refresh.
 
-WINDOW* setAutoFillWindow(ifstream& keyword_file);
+WINDOW* setAutoFillWindow();
 
 void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 	//Set windows
 	WINDOW* borders_window = setBorders(argv[1]);
 	WINDOW* input_window = setInputWindow();
-	WINDOW* auto_fill_window = setAutoFillWindow(keyword_file);
+	WINDOW* auto_fill_window = setAutoFillWindow();
 
 	//Associate windows with panel deck 
 	PANEL* panels[3];
@@ -353,6 +353,7 @@ int main(int argc, char* argv[])
 			case CTRL_SPACE:
 				move_panel(panels[2], input_cursor_y, input_cursor_x);
 				update_panels();
+				break;
 
 			//DEFAULT: insert character		
 			default:
@@ -438,22 +439,11 @@ WINDOW* setInputWindow()
 	return input;
 }
 
-WINDOW* setAutoFillWindow(ifstream& keyword_file)
+WINDOW* setAutoFillWindow()
 {
 	WINDOW* auto_fill;
 	auto_fill = newwin(7, 20, 0, 0);
 	box(auto_fill, 0, 0);
-
-	string from_file = "";
-
-	if (keyword_file.is_open())
-	{
-		for (int i = 0; i < auto_fill->_maxy && keyword_file.good(); i++)
-		{
-			getline(keyword_file, from_file);
-			mvwaddstr(auto_fill, i, 0, from_file.c_str());
-		}
-	}
 	return auto_fill;
 }
 
