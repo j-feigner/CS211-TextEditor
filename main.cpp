@@ -525,6 +525,8 @@ void outputVector(WINDOW* window, int line_num, int line_index, const vector<vec
 		output_cursor_x = 0;
 		output_cursor_y++;
 	}
+	//Prevents last line from retaining any leftover character data
+	wclrtoeol(window);
 	return;
 }
 
