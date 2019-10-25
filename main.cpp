@@ -12,6 +12,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include "trie.hpp"
 
 #define PDC_DLL_BUILD 1
 
@@ -62,6 +63,9 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
+
+TrieNode* readFileToTrie(ifstream& keyword_file);
+//Creates a trie data structure for auto fill functionality, returns pointer to root
 
 int main(int argc, char* argv[])
 {
@@ -121,6 +125,13 @@ int main(int argc, char* argv[])
 		vector<vector<chtype>>::iterator  line = text.begin();
 		vector<chtype>::iterator		  index = line->begin();
 	*/
+
+
+	string test_string = "test";
+
+	TrieNode* trie_root = new TrieNode;
+
+	insert(test_string, trie_root);
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -351,8 +362,22 @@ int main(int argc, char* argv[])
 			
 			//AUTOFILL COMMAND
 			case CTRL_SPACE:
+				//Create and draw panel
+				panels[2] = new_panel(auto_fill_window);
 				move_panel(panels[2], input_cursor_y, input_cursor_x);
 				update_panels();
+
+				//Keep user in box until a selection is made
+				while (user_input != NEWLINE)
+				{
+					wrefresh(input_window);
+					user_input = wgetch(input_window);
+				}
+
+				//Delete box
+				del_panel(panels[2]);
+				update_panels();
+
 				break;
 
 			//DEFAULT: insert character		
@@ -571,4 +596,13 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 
 
 	return;
+}
+
+TrieNode* readFileToTrie(ifstream& keyword_file)
+{
+	TrieNode* root = nullptr;
+
+
+
+	return root;
 }

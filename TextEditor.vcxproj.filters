@@ -27,6 +27,12 @@
     <ClInclude Include="text.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="trie_node.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trie.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="pdcurses.dll">
@@ -53,7 +59,7 @@
     <Text Include="test_output.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="test_keywords.txt">
+    <Text Include="cpp_keywords.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
