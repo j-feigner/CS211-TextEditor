@@ -32,7 +32,7 @@ WINDOW* setInputWindow();
 //Setter function for input window.
 //Requires external winddow refresh.
 
-WINDOW* setAutoFillWindow(int y, int x);
+WINDOW* setAutoFillWindow(int selection, int y, int x);
 
 void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
@@ -382,6 +382,9 @@ int main(int argc, char* argv[])
 
 				auto_fill(input_cursor_y, input_cursor_x);
 
+				outputVector(input_window, render_line_start, render_index_start, text);
+				wrefresh(input_window);
+
 				break;
 
 			//DEFAULT: insert character		
@@ -468,7 +471,7 @@ WINDOW* setInputWindow()
 	return input;
 }
 
-WINDOW* setAutoFillWindow(int y, int x)
+WINDOW* setAutoFillWindow(int selection, int y, int x)
 {
 	//Adjust window offset here
 	y += 2;
@@ -477,12 +480,20 @@ WINDOW* setAutoFillWindow(int y, int x)
 
 	auto_fill = newwin(7, 20, y, x);
 	box(auto_fill, 0, 0);
-	
-	mvwaddstr(auto_fill, 1, 1, "test");
-	mvwaddstr(auto_fill, 2, 1, "test");
-	mvwaddstr(auto_fill, 3, 1, "test");
-	mvwaddstr(auto_fill, 4, 1, "test");
-	mvwaddstr(auto_fill, 5, 1, "test");
+
+	for (int i = 1; i < 6; i++)
+	{
+		if (i == selection)
+		{
+			wattron(auto_fill, WA_REVERSE);
+			mvwaddstr(auto_fill, i, 1, "test");
+			wattroff(auto_fill, WA_REVERSE);
+		}
+		else
+		{
+			mvwaddstr(auto_fill, i, 1, "test");
+		}
+	}
 
 	return auto_fill;
 }
@@ -625,11 +636,11 @@ TrieNode* readFileToTrie(ifstream& keyword_file)
 void auto_fill(int y, int x)
 {
 	//Open fill box
-	WINDOW* auto_fill_window = setAutoFillWindow(y, x);
+	WINDOW* auto_fill_window = setAutoFillWindow(1, y, x);
 	wrefresh(auto_fill_window);
 
-	int location = 1;
-	char user_input = '/0';
+	int selection = 1;
+	int user_input = '/0';
 
 	//Loop until newline is entered
 	while (user_input != NEWLINE)
@@ -640,31 +651,33 @@ void auto_fill(int y, int x)
 		{
 			//If not in first position, move selection up
 			case KEY_UP:
-				if (location == 1)
+				if (selection == 1)
 				{
 					break;
 				}
 				else
 				{
-					location--;
+					selection--;
+					auto_fill_window = setAutoFillWindow(selection, y, x);
+					wrefresh(auto_fill_window);
 					break;
 				}
 			
 			//If not in last position, move selection down
 			case KEY_DOWN:
-				if (location == 5)
+				if (selection == 5)
 				{
 					break;
 				}
 				else
 				{
-					location++;
+					selection++;
+					auto_fill_window = setAutoFillWindow(selection, y, x);
+					wrefresh(auto_fill_window);
 					break;
 				}
 		}
 	}
-
-
 
 	return;
 }
