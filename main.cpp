@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <sstream>
+#include <queue>
 #include "trie.hpp"
 
 #define PDC_DLL_BUILD 1
@@ -71,7 +71,7 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
 
-void auto_fill(int y, int x);
+void auto_fill(queue<char> word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
 int main(int argc, char* argv[])
@@ -119,17 +119,8 @@ int main(int argc, char* argv[])
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
-
-	/* Trie Testing Block */
-	//insert("ant", trie_root);
-	//insert("anteater", trie_root);
-	//insert("antelope", trie_root);
-	//insert("chicken", trie_root);
-	//insert("deer", trie_root);
-	//insert("duck", trie_root);
-	//insert("goat", trie_root);
-	//insert("goldfish", trie_root);
-	//insert("goose", trie_root);
+	//Queue to track current word user is entering for auto-fill functionality
+	queue<char> word_buffer{};
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -200,29 +191,6 @@ int main(int argc, char* argv[])
 				else if (text[current_line_num + 1].size() <= current_line_index)
 				{
 					break;
-					/*
-					//Grab size difference between lines
-					scroll_index_buffer = text[current_line_num].size() - text[current_line_num + 1].size();
-
-					//Move edit location index back by size difference and increment edit location line number
-					current_line_index -= scroll_index_buffer;
-					current_line_num++;
-
-					//Set new render point
-					if (render_index_start <= scroll_index_buffer)
-					{
-						render_index_start = 0;
-					}
-					else
-					{
-						render_index_start -= scroll_index_buffer;
-					}
-					render_line_start++;
-
-					//Output vector and grab new y,x of window cursor
-					outputVector(input_window, render_line_start, render_index_start, text);
-					getyx(input_window, input_cursor_y, input_cursor_x);
-					*/
 				}
 				//If cursor is not in the last line and is at the bottom of the window,
 				//scroll down by one line
@@ -361,7 +329,7 @@ int main(int argc, char* argv[])
 			//AUTOFILL COMMAND
 			case CTRL_A:
 				//Run auto-fill subroutine
-				auto_fill(input_cursor_y, input_cursor_x);
+				auto_fill(word_buffer, input_cursor_y, input_cursor_x);
 
 				//Return input window to its previous state
 				wclear(input_window);
@@ -637,14 +605,14 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 	return;
 }
 
-void auto_fill(int y, int x)
+void auto_fill(queue<char> word_buffer, int y, int x)
 {
 	//Open fill box
 	WINDOW* auto_fill_window = setAutoFillWindow(1, y, x);
 	wrefresh(auto_fill_window);
 
 	int selection = 1;
-	int user_input = '/0';
+	int user_input = 0;
 
 	//Loop until newline is entered
 	while (user_input != NEWLINE)
