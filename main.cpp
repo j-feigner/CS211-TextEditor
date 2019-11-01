@@ -91,12 +91,6 @@ int main(int argc, char* argv[])
 	WINDOW* borders_window = setBorders(argv[1]);
 	WINDOW* input_window = setInputWindow();
 
-	//Associate windows with panel deck 
-	PANEL* panels[3];
-	panels[0] = new_panel(borders_window);      //BOTTOM OF DECK
-	panels[1] = new_panel(input_window);        //-
-	//panels[2] = new_panel(auto_fill_window);    //TOP OF DECK
-
 	//Output vector into input window
 	outputVector(input_window, 0, 0, text);
 
@@ -116,18 +110,6 @@ int main(int argc, char* argv[])
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
-	//This variable may be used for scrolling between lines of different sizes
-	//int scroll_index_buffer = 0;
-
-	//Iterators to point to user edit location in vector for inserts.
-	//Currently using these inside of the insert function, may find a 
-	//better way to utilize these as user position trackers instead
-	//of current_line_num and current_line_index integers later.
-	/*
-		vector<vector<chtype>>::iterator  line = text.begin();
-		vector<chtype>::iterator		  index = line->begin();
-	*/
-
 
 	string test_string = "test";
 
@@ -364,24 +346,11 @@ int main(int argc, char* argv[])
 			
 			//AUTOFILL COMMAND
 			case CTRL_A:
-				////Create and draw panel
-				//panels[2] = new_panel(auto_fill_window);
-				//move_panel(panels[2], input_cursor_y, input_cursor_x);
-				//update_panels();
-
-				////Keep user in box until a selection is made
-				//while (user_input != NEWLINE)
-				//{
-				//	wrefresh(input_window);
-				//	user_input = wgetch(input_window);
-				//}
-
-				////Delete box
-				//del_panel(panels[2]);
-				//update_panels();
-
+				//Run auto-fill subroutine
 				auto_fill(input_cursor_y, input_cursor_x);
 
+				//Return input window to its previous state
+				wclear(input_window);
 				outputVector(input_window, render_line_start, render_index_start, text);
 				wrefresh(input_window);
 
