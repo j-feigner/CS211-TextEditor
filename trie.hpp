@@ -5,32 +5,6 @@
 
 using namespace std;
 
-/*
-class Trie
-{
-private:
-
-	TrieNode* root = nullptr;
-
-public:
-
-	Trie()
-	{
-		root = new TrieNode{};
-	}
-
-	void insert(string word)
-	{
-		TrieNode* here = root;
-
-		for (int i = 0; i < word.length(); i++)
-		{
-			if(here->getChild(i) != here->getChild)
-		}
-	}
-};
-*/
-
 void insert(string word, TrieNode* root)
 {
 	TrieNode* here = root;
@@ -44,8 +18,8 @@ void insert(string word, TrieNode* root)
 		{
 			TrieNode* to_add = new TrieNode(current);
 			here->setChild(current, to_add);
-			here = here->getChild(current);
 		}
+		here = here->getChild(current);
 	}
 
 	return;

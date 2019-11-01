@@ -19,7 +19,7 @@
 #define BACKSPACE   8
 #define CTRL_E      5
 #define CTRL_S      19
-#define CTRL_SPACE  32
+#define CTRL_A      1
 #define NEWLINE     10
 
 using namespace std;
@@ -32,7 +32,7 @@ WINDOW* setInputWindow();
 //Setter function for input window.
 //Requires external winddow refresh.
 
-WINDOW* setAutoFillWindow();
+WINDOW* setAutoFillWindow(int y, int x);
 
 void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
@@ -67,6 +67,9 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 TrieNode* readFileToTrie(ifstream& keyword_file);
 //Creates a trie data structure for auto fill functionality, returns pointer to root
 
+void auto_fill(int y, int x);
+//Main function for auto fill subroutine
+
 int main(int argc, char* argv[])
 {
 	//Initialize screen, begin curses mode, stdscr settings
@@ -87,13 +90,12 @@ int main(int argc, char* argv[])
 	//Set windows
 	WINDOW* borders_window = setBorders(argv[1]);
 	WINDOW* input_window = setInputWindow();
-	WINDOW* auto_fill_window = setAutoFillWindow();
 
 	//Associate windows with panel deck 
 	PANEL* panels[3];
 	panels[0] = new_panel(borders_window);      //BOTTOM OF DECK
 	panels[1] = new_panel(input_window);        //-
-	panels[2] = new_panel(auto_fill_window);    //TOP OF DECK
+	//panels[2] = new_panel(auto_fill_window);    //TOP OF DECK
 
 	//Output vector into input window
 	outputVector(input_window, 0, 0, text);
@@ -361,22 +363,24 @@ int main(int argc, char* argv[])
 				break;
 			
 			//AUTOFILL COMMAND
-			case CTRL_SPACE:
-				//Create and draw panel
-				panels[2] = new_panel(auto_fill_window);
-				move_panel(panels[2], input_cursor_y, input_cursor_x);
-				update_panels();
+			case CTRL_A:
+				////Create and draw panel
+				//panels[2] = new_panel(auto_fill_window);
+				//move_panel(panels[2], input_cursor_y, input_cursor_x);
+				//update_panels();
 
-				//Keep user in box until a selection is made
-				while (user_input != NEWLINE)
-				{
-					wrefresh(input_window);
-					user_input = wgetch(input_window);
-				}
+				////Keep user in box until a selection is made
+				//while (user_input != NEWLINE)
+				//{
+				//	wrefresh(input_window);
+				//	user_input = wgetch(input_window);
+				//}
 
-				//Delete box
-				del_panel(panels[2]);
-				update_panels();
+				////Delete box
+				//del_panel(panels[2]);
+				//update_panels();
+
+				auto_fill(input_cursor_y, input_cursor_x);
 
 				break;
 
@@ -450,7 +454,7 @@ WINDOW* setBorders(char* file_name)
 	mvwaddstr(borders, LINES - 2, 0, "^S Save \t ^C Copy \t ^V Paste");
 	mvwaddstr(borders, LINES - 2, COLS - 8, "Line#");
 
-	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^O Open \t ^X Cut  ");
+	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^O Open \t ^A Fill");
 	mvwaddch(borders, LINES - 1, COLS - 6, '/');
 
 	return borders;
@@ -464,11 +468,22 @@ WINDOW* setInputWindow()
 	return input;
 }
 
-WINDOW* setAutoFillWindow()
+WINDOW* setAutoFillWindow(int y, int x)
 {
+	//Adjust window offset here
+	y += 2;
+
 	WINDOW* auto_fill;
-	auto_fill = newwin(7, 20, 0, 0);
+
+	auto_fill = newwin(7, 20, y, x);
 	box(auto_fill, 0, 0);
+	
+	mvwaddstr(auto_fill, 1, 1, "test");
+	mvwaddstr(auto_fill, 2, 1, "test");
+	mvwaddstr(auto_fill, 3, 1, "test");
+	mvwaddstr(auto_fill, 4, 1, "test");
+	mvwaddstr(auto_fill, 5, 1, "test");
+
 	return auto_fill;
 }
 
@@ -605,4 +620,51 @@ TrieNode* readFileToTrie(ifstream& keyword_file)
 
 
 	return root;
+}
+
+void auto_fill(int y, int x)
+{
+	//Open fill box
+	WINDOW* auto_fill_window = setAutoFillWindow(y, x);
+	wrefresh(auto_fill_window);
+
+	int location = 1;
+	char user_input = '/0';
+
+	//Loop until newline is entered
+	while (user_input != NEWLINE)
+	{
+		user_input = getch();
+
+		switch(user_input)
+		{
+			//If not in first position, move selection up
+			case KEY_UP:
+				if (location == 1)
+				{
+					break;
+				}
+				else
+				{
+					location--;
+					break;
+				}
+			
+			//If not in last position, move selection down
+			case KEY_DOWN:
+				if (location == 5)
+				{
+					break;
+				}
+				else
+				{
+					location++;
+					break;
+				}
+		}
+	}
+
+
+
+	return;
 }
