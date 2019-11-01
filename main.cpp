@@ -25,16 +25,23 @@
 using namespace std;
 
 WINDOW* setBorders(char* file_name);
-//Setter function for borders window. Requires external window refresh.
-//Expects character pointer to current file name (command line char* argv[1])
+//Setter function for borders window.
+//Expects command line argument for file name.
 
 WINDOW* setInputWindow();
 //Setter function for input window.
-//Requires external winddow refresh.
 
 WINDOW* setAutoFillWindow(int selection, int y, int x);
+//Setter function for auto-fill box.
+//Called in auto_fill(), expects user selection and cursor position
 
-void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text);
+void readFileToVector(ifstream& input_file, vector<string>& keywords);
+//Reads file contents into an empty vector of strings for use in auto-fill.
+
+TrieNode* newTrie(const vector<string>& keywords);
+//Fills keyword trie, returns pointer to root
+
+void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
 //Each sub-vector should be terminated with a newline, except the final line.
 
@@ -64,9 +71,6 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
 
-TrieNode* readFileToTrie(ifstream& keyword_file);
-//Creates a trie data structure for auto fill functionality, returns pointer to root
-
 void auto_fill(int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
@@ -80,12 +84,17 @@ int main(int argc, char* argv[])
 
 	//File streams
 	ifstream input_file{ argv[1] };
-	ifstream keyword_file{ "test_keywords.txt" };
+	ifstream keyword_file{ "cpp_keywords.txt" };
 	ofstream output_file{ "test_output.txt" };
+	
+	//Initialize and fill keywords vector and trie
+	vector<string> cpp_keywords{};
+	readFileToVector(keyword_file, cpp_keywords);
+	TrieNode* cpp_trie = newTrie(cpp_keywords);
 
 	//Initialize and fill main text vector
 	vector<vector<chtype>> text{};
-	readFileToVector(input_file, text);
+	readFileTo2DVector(input_file, text);
 
 	//Set windows
 	WINDOW* borders_window = setBorders(argv[1]);
@@ -111,17 +120,16 @@ int main(int argc, char* argv[])
 	int render_line_start = 0;
 	int render_index_start = 0;
 
-	TrieNode* trie_root = new TrieNode;
-
-	insert("ant", trie_root);
-	insert("anteater", trie_root);
-	insert("antelope", trie_root);
-	insert("chicken", trie_root);
-	insert("deer", trie_root);
-	insert("duck", trie_root);
-	insert("goat", trie_root);
-	insert("goldfish", trie_root);
-	insert("goose", trie_root);
+	/* Trie Testing Block */
+	//insert("ant", trie_root);
+	//insert("anteater", trie_root);
+	//insert("antelope", trie_root);
+	//insert("chicken", trie_root);
+	//insert("deer", trie_root);
+	//insert("duck", trie_root);
+	//insert("goat", trie_root);
+	//insert("goldfish", trie_root);
+	//insert("goose", trie_root);
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -475,7 +483,35 @@ WINDOW* setAutoFillWindow(int selection, int y, int x)
 	return auto_fill;
 }
 
-void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text)
+void readFileToVector(ifstream& input_file, vector<string>& keywords)
+{
+	string current = "";
+
+	if (input_file.is_open())
+	{
+		for (int i = 0; input_file.good(); i++)
+		{
+			getline(input_file, current);
+			keywords.push_back(current);
+		}
+	}
+
+	return;
+}
+
+TrieNode* newTrie(const vector<string>& keywords)
+{
+	TrieNode* head = new TrieNode;
+
+	for (int i = 0; i < keywords.size(); i++)
+	{
+		insert(keywords[i], head);
+	}
+
+	return head;
+}
+
+void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text)
 {
 	vector<chtype> line{};
 	char current = NULL;
@@ -599,15 +635,6 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 
 
 	return;
-}
-
-TrieNode* readFileToTrie(ifstream& keyword_file)
-{
-	TrieNode* root = nullptr;
-
-
-
-	return root;
 }
 
 void auto_fill(int y, int x)

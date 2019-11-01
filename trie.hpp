@@ -13,7 +13,7 @@ void insert(string word, TrieNode* root)
 	for (int i = 0; i < word.length(); i++)
 	{
 		current = word[i];
-		//If current node does not have a child with the current char, create one
+		//If current node does not have a child with the current char: create new child
 		if (here->hasChild(current) == false)
 		{
 			TrieNode* to_add = new TrieNode(current);
@@ -21,6 +21,9 @@ void insert(string word, TrieNode* root)
 		}
 		here = here->getChild(current);
 	}
+
+	//Set last character as end of word
+	here->setEndOfWord(true);
 
 	return;
 }
