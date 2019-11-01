@@ -62,8 +62,5 @@
     <Text Include="cpp_keywords.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\auto_fill_test.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
 </Project>

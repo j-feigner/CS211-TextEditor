@@ -19,6 +19,7 @@ public:
 	TrieNode()
 	{
 		data = '/0';
+		end = false;
 	}
 
 	//Constructor

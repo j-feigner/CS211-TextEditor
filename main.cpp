@@ -68,7 +68,7 @@ TrieNode* readFileToTrie(ifstream& keyword_file);
 //Creates a trie data structure for auto fill functionality, returns pointer to root
 
 void auto_fill(int y, int x);
-//Main function for auto fill subroutine
+//Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
 int main(int argc, char* argv[])
 {
@@ -111,11 +111,17 @@ int main(int argc, char* argv[])
 	int render_line_start = 0;
 	int render_index_start = 0;
 
-	string test_string = "test";
-
 	TrieNode* trie_root = new TrieNode;
 
-	insert(test_string, trie_root);
+	insert("ant", trie_root);
+	insert("anteater", trie_root);
+	insert("antelope", trie_root);
+	insert("chicken", trie_root);
+	insert("deer", trie_root);
+	insert("duck", trie_root);
+	insert("goat", trie_root);
+	insert("goldfish", trie_root);
+	insert("goose", trie_root);
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -353,6 +359,8 @@ int main(int argc, char* argv[])
 				wclear(input_window);
 				outputVector(input_window, render_line_start, render_index_start, text);
 				wrefresh(input_window);
+
+				wmove(input_window, input_cursor_y, input_cursor_x);
 
 				break;
 

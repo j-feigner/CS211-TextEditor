@@ -147,7 +147,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\auto_fill_test.txt" />
     <Text Include="cpp_keywords.txt" />
     <Text Include="test_input.txt" />
     <Text Include="test_output.txt" />
