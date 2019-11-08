@@ -13,6 +13,7 @@
 #include <fstream>
 #include <queue>
 #include <bitset>
+#include <cmath>
 #include "trie.hpp"
 
 #define PDC_DLL_BUILD 1
@@ -44,9 +45,11 @@ void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
 //Each sub-vector should be terminated with a newline, except the final line.
 
-void writeVectorToFile(ofstream& output_file, const vector<vector<chtype>>& text);
-//Outputs text vector to a plain text file with edits madde by the user.
-//Currently converts chtypes to plain chars so file is human readable for debugging.
+void writeOut(ofstream& output_file, const vector<vector<chtype>>& text);
+//Outputs text vector to a plain text file.
+
+void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, unordered_map<string, int> word_codes);
+//Outputs text vector using unordered map of word codes to text file.
 
 void outputVector(WINDOW* window, int line_num, int line_index, const vector<vector<chtype>>& text);
 //Outputs current vector contents to the input window from the coordiantes (line_num, line_index).
@@ -76,9 +79,8 @@ string auto_fill(Trie source, string word_buffer, int y, int x);
 unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
 //Fills a hashtable with the frequencies of strings in text data
 
-unordered_map <string, int> assignValues(unordered_map<string, int> frequency_distribution);
-
-unordered_map <string, int> assignValues(priority_queue<pair<string, int>> words_queue);
+unordered_map <string, string> assignValues(unordered_map<string, int> frequency_distribution);
+//Converts a frequency distribution to an unordered map with ascending values for most common strings
 
 
 int main(int argc, char* argv[])
@@ -133,7 +135,7 @@ int main(int argc, char* argv[])
 	//Hashtable for storing frequency distribution of words
 	unordered_map<string, int> freq_dist = createFreqDist(text);
 	//Hashtable for storing word codes
-	unordered_map<string, int> word_codes = assignValues(freq_dist);
+	unordered_map<string, string> word_codes = assignValues(freq_dist);
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -345,7 +347,7 @@ int main(int argc, char* argv[])
 
 			//SAVE COMMAND
 			case CTRL_S:
-				writeVectorToFile(output_file, text);
+				writeOut(output_file, text);
 				break;
 			
 			//AUTOFILL COMMAND
@@ -543,10 +545,9 @@ void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text)
 	return;
 }
 
-void writeVectorToFile(ofstream& output_file, const vector<vector<chtype>>& text)
+void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 {
 	//Value to convert chtype to char for human readability.
-	//May delete later for preserving chtype attributes
 	char chtype_to_char = NULL;
 
 	if (output_file.good())
@@ -556,6 +557,26 @@ void writeVectorToFile(ofstream& output_file, const vector<vector<chtype>>& text
 			for (int j = 0; j < text[i].size(); j++)
 			{
 				                 //raw        //conversion factor
+				chtype_to_char = text[i][j] - A_ATTRIBUTES;
+				output_file << chtype_to_char;
+			}
+		}
+	}
+	return;
+}
+
+void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, unordered_map<string, int> word_codes)
+{
+	//Value to convert chtype to char for human readability.
+	char chtype_to_char = NULL;
+
+	if (output_file.good())
+	{
+		for (int i = 0; i < text.size(); i++)
+		{
+			for (int j = 0; j < text[i].size(); j++)
+			{
+                                 //raw        //conversion factor
 				chtype_to_char = text[i][j] - A_ATTRIBUTES;
 				output_file << chtype_to_char;
 			}
@@ -735,9 +756,13 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 	return FD;
 }
 
-unordered_map <string, int> assignValues(unordered_map<string, int> freq_dist)
+unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist)
 {
-	unordered_map<string, int> word_codes{};
+	unordered_map<string, string> word_codes{};
+	string s = "";
+
+	//Finds the minimum number of binary digits to represent all words
+	const int bit_field_size = log2(freq_dist.size());
 
 	//Creating priority queue from unordered map
 	priority_queue<pair<string, int>> words_q{};
@@ -749,7 +774,9 @@ unordered_map <string, int> assignValues(unordered_map<string, int> freq_dist)
 	//Create a new unordered map with corresponding unique int values
 	for (int i = 0; i < words_q.size(); i++)
 	{
-		word_codes[words_q.top().first] = i;
+		//Converts i to a binary string of size 32
+		s = bitset<8>(i).to_string();
+		word_codes[words_q.top().first] = s;
 		words_q.pop();
 	}
 
