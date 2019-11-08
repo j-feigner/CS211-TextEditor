@@ -32,7 +32,7 @@ WINDOW* setBorders(char* file_name);
 WINDOW* setInputWindow();
 //Setter function for input window.
 
-WINDOW* setAutoFillWindow(int selection, int y, int x);
+WINDOW* setAutoFillWindow(vector<string> matches, int selection, int y, int x);
 //Setter function for auto-fill box.
 //Called in auto_fill(), expects user selection and cursor position
 
@@ -69,7 +69,7 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
 
-void auto_fill(Trie source, string word_buffer, int y, int x);
+string auto_fill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
 void emptyQueue(queue<char>& q);
@@ -120,8 +120,10 @@ int main(int argc, char* argv[])
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
-	//Queue to track current word user is entering for auto-fill functionality
-	string word_buffer{};
+	//String to track current word user is entering for auto-fill functionality
+	string word_buffer = "";
+	//String returned from auto-fill function to be inserted into window
+	string word_to_insert = "";
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -274,8 +276,11 @@ int main(int argc, char* argv[])
 				}
 
 			case BACKSPACE:
-				//Delete last char from buffer
-				word_buffer.pop_back();
+				//Delete last char from buffer if not empty
+				if (!word_buffer.empty())
+				{
+					word_buffer.pop_back();
+				}
 
 				//If cursor is at the beginning of the line, delete line
 				if (current_line_index == 0)
@@ -335,15 +340,22 @@ int main(int argc, char* argv[])
 			
 			//AUTOFILL COMMAND
 			case CTRL_A:
-				//Run auto-fill subroutine
-				auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
+				//Run auto-fill subroutine and grab user selection
+				word_to_insert = auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
 
-				//Return input window to its previous state
 				wclear(input_window);
-				outputVector(input_window, render_line_start, render_index_start, text);
-				wrefresh(input_window);
 
-				wmove(input_window, input_cursor_y, input_cursor_x);
+				//Insert remaining characters from user selection one at a time
+				for (int i = 0; i < word_to_insert.length(); i++)
+				{
+					insertCharacterIntoLine(text, word_to_insert[i], current_line_num, current_line_index);
+					outputVector(input_window, render_line_start, render_index_start, text);
+
+					//Move right by one
+					input_cursor_x++;
+					current_line_index++;
+					wmove(input_window, input_cursor_y, input_cursor_x);
+				}
 
 				break;
 
@@ -442,7 +454,7 @@ WINDOW* setInputWindow()
 	return input;
 }
 
-WINDOW* setAutoFillWindow(int selection, int y, int x)
+WINDOW* setAutoFillWindow(vector<string> matches, int selection, int y, int x)
 {
 	//Adjust window offset here
 	y += 2;
@@ -452,17 +464,19 @@ WINDOW* setAutoFillWindow(int selection, int y, int x)
 	auto_fill = newwin(7, 20, y, x);
 	box(auto_fill, 0, 0);
 
-	for (int i = 1; i < 6; i++)
+	//Output the first five matches
+	for (int i = 0; i < 5 && i < matches.size(); i++)
 	{
+		//Highlight the user selection
 		if (i == selection)
 		{
 			wattron(auto_fill, WA_REVERSE);
-			mvwaddstr(auto_fill, i, 1, "test");
+			mvwaddstr(auto_fill, i + 1, 1, matches[i].c_str());
 			wattroff(auto_fill, WA_REVERSE);
 		}
 		else
 		{
-			mvwaddstr(auto_fill, i, 1, "test");
+			mvwaddstr(auto_fill, i + 1, 1, matches[i].c_str());
 		}
 	}
 
@@ -611,16 +625,21 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 	return;
 }
 
-void auto_fill(Trie source, string word_buffer, int y, int x)
+string auto_fill(Trie source, string word_buffer, int y, int x)
 {
 	vector<string> matches = source.findMatches(word_buffer);
 
-	//Open fill box
-	WINDOW* auto_fill_window = setAutoFillWindow(1, y, x);
-	wrefresh(auto_fill_window);
+	//If not matches found, exit function
+	if (matches.empty())
+	{
+		return "";
+	}
 
-	int selection = 1;
+	int selection = 0;
 	int user_input = 0;
+
+	WINDOW* auto_fill_window = setAutoFillWindow(matches, selection, y, x);
+	wrefresh(auto_fill_window);
 
 	//Loop until newline is entered
 	while (user_input != NEWLINE)
@@ -631,39 +650,44 @@ void auto_fill(Trie source, string word_buffer, int y, int x)
 		{
 			//If not in first position, move selection up
 			case KEY_UP:
-				if (selection == 1)
+				if (selection == 0)
 				{
 					break;
 				}
 				else
 				{
 					selection--;
-					auto_fill_window = setAutoFillWindow(selection, y, x);
+					auto_fill_window = setAutoFillWindow(matches, selection, y, x);
 					wrefresh(auto_fill_window);
 					break;
 				}
 			
 			//If not in last position, move selection down
 			case KEY_DOWN:
-				if (selection == 5)
+				if (selection == 4 || selection == matches.size())
 				{
 					break;
 				}
 				else
 				{
 					selection++;
-					auto_fill_window = setAutoFillWindow(selection, y, x);
+					auto_fill_window = setAutoFillWindow(matches, selection, y, x);
 					wrefresh(auto_fill_window);
 					break;
 				}
 
-			//Default: enter character to be searched
 			default:
 				break;
 		}
 	}
 
-	return;
+	//Grab user selected string
+	string to_insert = matches[selection];
+
+	//Erase characters already entered by user
+	to_insert.erase(0, word_buffer.length());
+
+	return to_insert;
 }
 
 void emptyQueue(queue<char>& q)

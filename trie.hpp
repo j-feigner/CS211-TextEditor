@@ -7,9 +7,6 @@ using namespace std;
 
 class Trie
 {
-private:
-	TrieNode* root;
-
 public:
 	//Default constructor
 	Trie()
@@ -74,14 +71,24 @@ public:
 					matches.push_back(current_word);
 				}
 			}
+			//If current node does not have a matching child node, the trie has no matching words
+			else
+			{
+				//Returns empty vector
+				return matches;
+			}
 		}
 
-		//Moves through the rest of the tree in-order until all possible matches are found
+		//Moves through the rest of the tree until all matches are found
 		findRemaining(here, current_word, matches);
 
 		return matches;
 	}
 
+private:
+	TrieNode* root;
+
+	//Recursive subroutine within findMatches()
 	void findRemaining(TrieNode* here, string current_word, vector<string>& matches)
 	{
 		//Add current character to word
