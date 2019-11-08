@@ -60,11 +60,17 @@ public:
 		//Moves through tree until last matching character in word is found
 		for (int i = 0; i < word.length(); i++)
 		{
-			//If current node has a matching child node, move to that child and push it to current word
+			//If current node has a matching child node, move to that child
 			if (here->hasChild(word[i]))
 			{
 				here = here->getChild(word[i]);
-				current_word.push_back(here->getValue());
+
+				//Push character to current_word if it is not the last character in the entered string
+				if (word[i] != word.back())
+				{
+					current_word.push_back(here->getValue());
+				}
+
 				//If new location is end of word, push word to matches
 				if (here->isEndOfWord())
 				{
@@ -79,7 +85,7 @@ public:
 			}
 		}
 
-		//Moves through the rest of the tree until all matches are found
+		//Moves through the rest of the trie until all matches are found
 		findRemaining(here, current_word, matches);
 
 		return matches;
