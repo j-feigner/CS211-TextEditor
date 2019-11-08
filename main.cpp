@@ -851,8 +851,3 @@ unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist
 
 	return word_codes;
 }
-
-bool compare(const pair<string, int>& left, const pair<string, int>& right)
-{
-	return left.second > right.second;
-}
