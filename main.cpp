@@ -72,8 +72,8 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 string auto_fill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
-void emptyQueue(queue<char>& q);
-//Empties a queue
+unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
+//Fills a hashtable with the frequencies of strings in text data
 
 int main(int argc, char* argv[])
 {
@@ -124,6 +124,8 @@ int main(int argc, char* argv[])
 	string word_buffer = "";
 	//String returned from auto-fill function to be inserted into window
 	string word_to_insert = "";
+	//Hashtable for storing frequency distribution of words
+	unordered_map<string, int> freq_dist{};
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -336,6 +338,7 @@ int main(int argc, char* argv[])
 			//SAVE COMMAND
 			case CTRL_S:
 				writeVectorToFile(output_file, text);
+				freq_dist = createFreqDist(text);
 				break;
 			
 			//AUTOFILL COMMAND
@@ -343,18 +346,22 @@ int main(int argc, char* argv[])
 				//Run auto-fill subroutine and grab user selection
 				word_to_insert = auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
 
-				wclear(input_window);
-
-				//Insert remaining characters from user selection one at a time
-				for (int i = 0; i < word_to_insert.length(); i++)
+				//If auto_fill() returned a word, insert selection
+				if (!word_to_insert.empty())
 				{
-					insertCharacterIntoLine(text, word_to_insert[i], current_line_num, current_line_index);
-					outputVector(input_window, render_line_start, render_index_start, text);
+					wclear(input_window);
 
-					//Move right by one
-					input_cursor_x++;
-					current_line_index++;
-					wmove(input_window, input_cursor_y, input_cursor_x);
+					//Insert remaining characters from user selection one at a time
+					for (int i = 0; i < word_to_insert.length(); i++)
+					{
+						insertCharacterIntoLine(text, word_to_insert[i], current_line_num, current_line_index);
+						outputVector(input_window, render_line_start, render_index_start, text);
+
+						//Move right by one
+						input_cursor_x++;
+						current_line_index++;
+						wmove(input_window, input_cursor_y, input_cursor_x);
+					}
 				}
 
 				break;
@@ -690,8 +697,33 @@ string auto_fill(Trie source, string word_buffer, int y, int x)
 	return to_insert;
 }
 
-void emptyQueue(queue<char>& q)
+unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 {
-	q = queue<char> {};
-	return;
+	char current_ch = '/0';
+	string current_word = "";
+
+	unordered_map<string, int> FD{};
+
+	for (int i = 0; i < text.size(); i++)
+	{
+		for (int j = 0; j < text[i].size(); j++)
+		{
+			//Convert chtype to plain char
+			current_ch = text[i][j] - A_ATTRIBUTES;
+
+			//If character is a lowercase letter, push it to word
+			if (current_ch >= 'a' && current_ch <= 'z')
+			{
+				current_word.push_back(current_ch);
+			}
+			//Otherwise increment frequency of current word (if non-empty)
+			else if(!current_word.empty())
+			{
+				FD[current_word]++;
+				current_word.clear();
+			}
+		}
+	}
+
+	return FD;
 }
