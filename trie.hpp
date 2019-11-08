@@ -56,23 +56,51 @@ public:
 
 	vector<string> findMatches(string word)
 	{
-		TrieNode* here = root;
 		vector<string> matches{};
+		string current_word = "";
+		TrieNode* here = root;
 
+		//Moves through tree until last matching character in word is found
 		for (int i = 0; i < word.length(); i++)
 		{
-
+			//If current node has a matching child node, move to that child and push it to current word
+			if (here->hasChild(word[i]))
+			{
+				here = here->getChild(word[i]);
+				current_word.push_back(here->getValue());
+				//If new location is end of word, push word to matches
+				if (here->isEndOfWord())
+				{
+					matches.push_back(current_word);
+				}
+			}
 		}
+
+		//Moves through the rest of the tree in-order until all possible matches are found
+		findRemaining(here, current_word, matches);
 
 		return matches;
 	}
 
-	string search(char to_find, TrieNode* location)
+	void findRemaining(TrieNode* here, string current_word, vector<string>& matches)
 	{
-		string word = "";
+		//Add current character to word
+		current_word.push_back(here->getValue());
 
-		TrieNode* here = location;
+		//If the current location is an end of word, push current word as a possible match
+		if (here->isEndOfWord())
+		{
+			matches.push_back(current_word);
+		}
 
-		return word;
+		//Duplicate of current node's children hashtable
+		unordered_map<char, TrieNode*> children = here->getChildren();
+		//Call recursively on all of these children
+		for (auto ch : children)
+		{
+			findRemaining(ch.second, current_word, matches);
+		}
+
+		return;
 	}
 };

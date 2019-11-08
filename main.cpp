@@ -69,7 +69,7 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
 
-void auto_fill(queue<char> word_buffer, int y, int x);
+void auto_fill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
 void emptyQueue(queue<char>& q);
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
 	int render_line_start = 0;
 	int render_index_start = 0;
 	//Queue to track current word user is entering for auto-fill functionality
-	queue<char> word_buffer{};
+	string word_buffer{};
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -275,7 +275,7 @@ int main(int argc, char* argv[])
 
 			case BACKSPACE:
 				//Delete last char from buffer
-				word_buffer.pop();
+				word_buffer.pop_back();
 
 				//If cursor is at the beginning of the line, delete line
 				if (current_line_index == 0)
@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
 
 			case NEWLINE:
 				//Clear buffer (new word)
-				emptyQueue(word_buffer);
+				word_buffer.clear();
 
 				//TODO: add scroll down functionality if in last line of window
 				//Insert and output
@@ -336,7 +336,7 @@ int main(int argc, char* argv[])
 			//AUTOFILL COMMAND
 			case CTRL_A:
 				//Run auto-fill subroutine
-				auto_fill(word_buffer, input_cursor_y, input_cursor_x);
+				auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
 
 				//Return input window to its previous state
 				wclear(input_window);
@@ -352,12 +352,12 @@ int main(int argc, char* argv[])
 				//TEMPORARY: if user_input is a space, empty buffer for new word
 				if (user_input == SPACE)
 				{
-					emptyQueue(word_buffer);
+					word_buffer.clear();
 				}
 				//Otherwise add character to word buffer
 				else
 				{
-					word_buffer.push(user_input);
+					word_buffer.push_back(user_input);
 				}
 
 				//If cursor is at the right of the window,
@@ -611,8 +611,10 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 	return;
 }
 
-void auto_fill(queue<char> word_buffer, int y, int x)
+void auto_fill(Trie source, string word_buffer, int y, int x)
 {
+	vector<string> matches = source.findMatches(word_buffer);
+
 	//Open fill box
 	WINDOW* auto_fill_window = setAutoFillWindow(1, y, x);
 	wrefresh(auto_fill_window);
@@ -666,9 +668,6 @@ void auto_fill(queue<char> word_buffer, int y, int x)
 
 void emptyQueue(queue<char>& q)
 {
-	while (!q.empty())
-	{
-		q.pop();
-	}
+	q = queue<char> {};
 	return;
 }

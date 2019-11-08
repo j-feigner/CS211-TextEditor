@@ -51,6 +51,12 @@ public:
 	{
 		return data;
 	}
+	
+	//Getter: children
+	unordered_map<char, TrieNode*> getChildren()
+	{
+		return children;
+	}
 
 	//Getter: child pointer
 	TrieNode* getChild(char index)
@@ -59,7 +65,7 @@ public:
 	}
 
 	//Getter: end of word marker
-	bool getEndOfWord()
+	bool isEndOfWord()
 	{
 		return end;
 	}
