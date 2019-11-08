@@ -54,7 +54,7 @@ public:
 		return;
 	}
 
-	vector<string> findMatches(string word, TrieNode* root)
+	vector<string> findMatches(string word)
 	{
 		TrieNode* here = root;
 		vector<string> matches{};

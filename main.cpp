@@ -16,6 +16,7 @@
 
 #define PDC_DLL_BUILD 1
 
+#define SPACE       32
 #define BACKSPACE   8
 #define CTRL_E      5
 #define CTRL_S      19
@@ -70,6 +71,9 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 
 void auto_fill(queue<char> word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
+
+void emptyQueue(queue<char>& q);
+//Empties a queue
 
 int main(int argc, char* argv[])
 {
@@ -270,6 +274,9 @@ int main(int argc, char* argv[])
 				}
 
 			case BACKSPACE:
+				//Delete last char from buffer
+				word_buffer.pop();
+
 				//If cursor is at the beginning of the line, delete line
 				if (current_line_index == 0)
 				{
@@ -304,6 +311,9 @@ int main(int argc, char* argv[])
 				break;
 
 			case NEWLINE:
+				//Clear buffer (new word)
+				emptyQueue(word_buffer);
+
 				//TODO: add scroll down functionality if in last line of window
 				//Insert and output
 				insertNewlineIntoVector(text, current_line_num, current_line_index);
@@ -339,6 +349,17 @@ int main(int argc, char* argv[])
 
 			//DEFAULT: insert character		
 			default:
+				//TEMPORARY: if user_input is a space, empty buffer for new word
+				if (user_input == SPACE)
+				{
+					emptyQueue(word_buffer);
+				}
+				//Otherwise add character to word buffer
+				else
+				{
+					word_buffer.push(user_input);
+				}
+
 				//If cursor is at the right of the window,
 				//insert character to line and scroll right
 				if (input_cursor_x == input_window->_maxx - 1)
@@ -633,8 +654,21 @@ void auto_fill(queue<char> word_buffer, int y, int x)
 					wrefresh(auto_fill_window);
 					break;
 				}
+
+			//Default: enter character to be searched
+			default:
+				break;
 		}
 	}
 
+	return;
+}
+
+void emptyQueue(queue<char>& q)
+{
+	while (!q.empty())
+	{
+		q.pop();
+	}
 	return;
 }
