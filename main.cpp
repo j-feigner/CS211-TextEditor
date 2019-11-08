@@ -38,9 +38,6 @@ WINDOW* setAutoFillWindow(int selection, int y, int x);
 void readFileToVector(ifstream& input_file, vector<string>& keywords);
 //Reads file contents into an empty vector of strings for use in auto-fill.
 
-TrieNode* newTrie(const vector<string>& keywords);
-//Fills keyword trie, returns pointer to root
-
 void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
 //Each sub-vector should be terminated with a newline, except the final line.
@@ -90,7 +87,7 @@ int main(int argc, char* argv[])
 	//Initialize and fill keywords vector and trie
 	vector<string> cpp_keywords{};
 	readFileToVector(keyword_file, cpp_keywords);
-	TrieNode* cpp_trie = newTrie(cpp_keywords);
+	Trie cpp_trie(cpp_keywords);
 
 	//Initialize and fill main text vector
 	vector<vector<chtype>> text{};
@@ -465,18 +462,6 @@ void readFileToVector(ifstream& input_file, vector<string>& keywords)
 	}
 
 	return;
-}
-
-TrieNode* newTrie(const vector<string>& keywords)
-{
-	TrieNode* head = new TrieNode;
-
-	for (int i = 0; i < keywords.size(); i++)
-	{
-		insert(keywords[i], head);
-	}
-
-	return head;
 }
 
 void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text)

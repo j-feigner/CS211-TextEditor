@@ -5,47 +5,74 @@
 
 using namespace std;
 
-void insert(string word, TrieNode* root)
+class Trie
 {
-	TrieNode* here = root;
-	char current = '/0';
+private:
+	TrieNode* root;
 
-	for (int i = 0; i < word.length(); i++)
+public:
+	//Default constructor
+	Trie()
 	{
-		current = word[i];
-		//If current node does not have a child with the current char: create new child
-		if (here->hasChild(current) == false)
+		root = new TrieNode;
+	}
+
+	//Constructs Trie using a vector of strings as data source
+	Trie(const vector<string>& words)
+	{
+		root = new TrieNode;
+
+		for (int i = 0; i < words.size(); i++)
 		{
-			TrieNode* to_add = new TrieNode(current);
-			here->setChild(current, to_add);
+			insert(words[i]);
 		}
-		here = here->getChild(current);
+
+		return;
 	}
 
-	//Set last character as end of word
-	here->setEndOfWord(true);
-
-	return;
-}
-
-vector<string> findMatches(string word, TrieNode* root)
-{
-	TrieNode* here = root;
-	vector<string> matches{};
-
-	for (int i = 0; i < word.length(); i++)
+	//Inserts string into Trie character by character
+	void insert(string word)
 	{
+		TrieNode* here = root;
+		char current = '/0';
 
+		for (int i = 0; i < word.length(); i++)
+		{
+			current = word[i];
+			//If current node does not have a child with the current char: create new child
+			if (here->hasChild(current) == false)
+			{
+				TrieNode* to_add = new TrieNode(current);
+				here->setChild(current, to_add);
+			}
+			here = here->getChild(current);
+		}
+
+		//Set last character as end of word
+		here->setEndOfWord(true);
+
+		return;
 	}
 
-	return matches;
-}
+	vector<string> findMatches(string word, TrieNode* root)
+	{
+		TrieNode* here = root;
+		vector<string> matches{};
 
-string search(char to_find, TrieNode* location)
-{
-	string word = "";
+		for (int i = 0; i < word.length(); i++)
+		{
 
-	TrieNode* here = location;
+		}
 
-	return word;
-}
+		return matches;
+	}
+
+	string search(char to_find, TrieNode* location)
+	{
+		string word = "";
+
+		TrieNode* here = location;
+
+		return word;
+	}
+};
