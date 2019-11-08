@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClInclude Include="curses.h" />
     <ClInclude Include="curspriv.h" />
+    <ClInclude Include="pair_compare.hpp" />
     <ClInclude Include="panel.h" />
     <ClInclude Include="text.hpp" />
     <ClInclude Include="trie.hpp" />

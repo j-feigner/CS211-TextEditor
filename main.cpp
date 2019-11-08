@@ -16,6 +16,7 @@
 #include <cmath>
 #include <stack>
 #include "trie.hpp"
+#include "pair_compare.hpp"
 
 #define PDC_DLL_BUILD 1
 
@@ -77,7 +78,11 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 string auto_fill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
+bool isLetter(char c);
+//Helper function to check whether a char is a letter
+
 string intToBinaryString(int x);
+//Converts an integer to the smallest possible binary value, represented as a string
 
 unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
 //Fills a hashtable with the frequencies of strings in text data
@@ -586,14 +591,14 @@ void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, un
 				current_ch = text[i][j] - A_ATTRIBUTES;
 
 				//If character is a lowercase letter, push it to word
-				if (current_ch >= 'a' && current_ch <= 'z')
+				if (isLetter(current_ch))
 				{
 					current_word.push_back(current_ch);
 				}
-				//Output current word
-				else if (!current_word.empty())
+				//If any other character, output current word and that char
+				else
 				{
-					output_file << word_codes[current_word] << " ";
+					output_file << word_codes[current_word] << current_ch;
 					current_word.clear();
 				}
 			}
@@ -742,6 +747,22 @@ string auto_fill(Trie source, string word_buffer, int y, int x)
 	return to_insert;
 }
 
+bool isLetter(char c)
+{
+	if (c >= 'a' && c <= 'z')
+	{
+		return true;
+	}
+	else if (c >= 'A' && c <= 'Z')
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 string intToBinaryString(int x)
 {
 	//Base Case: most common word will return 0
@@ -810,11 +831,8 @@ unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist
 	unordered_map<string, string> word_codes{};
 	string s = "";
 
-	//Finds the minimum number of binary digits to represent all words
-	const int bit_field_size = log2(freq_dist.size());
-
 	//Creating priority queue from unordered map
-	priority_queue<pair<string, int>> words_q{};
+	priority_queue<pair<string, int>, vector<pair<string, int>>, MaxHeapPairComparer> words_q{};
 	for (auto i : freq_dist)
 	{
 		words_q.push(i);
@@ -832,4 +850,9 @@ unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist
 	}
 
 	return word_codes;
+}
+
+bool compare(const pair<string, int>& left, const pair<string, int>& right)
+{
+	return left.second > right.second;
 }
