@@ -12,6 +12,7 @@
 #include <string>
 #include <fstream>
 #include <queue>
+#include <bitset>
 #include "trie.hpp"
 
 #define PDC_DLL_BUILD 1
@@ -75,6 +76,11 @@ string auto_fill(Trie source, string word_buffer, int y, int x);
 unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
 //Fills a hashtable with the frequencies of strings in text data
 
+unordered_map <string, int> assignValues(unordered_map<string, int> frequency_distribution);
+
+unordered_map <string, int> assignValues(priority_queue<pair<string, int>> words_queue);
+
+
 int main(int argc, char* argv[])
 {
 	//Initialize screen, begin curses mode, stdscr settings
@@ -125,7 +131,9 @@ int main(int argc, char* argv[])
 	//String returned from auto-fill function to be inserted into window
 	string word_to_insert = "";
 	//Hashtable for storing frequency distribution of words
-	unordered_map<string, int> freq_dist{};
+	unordered_map<string, int> freq_dist = createFreqDist(text);
+	//Hashtable for storing word codes
+	unordered_map<string, int> word_codes = assignValues(freq_dist);
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -338,7 +346,6 @@ int main(int argc, char* argv[])
 			//SAVE COMMAND
 			case CTRL_S:
 				writeVectorToFile(output_file, text);
-				freq_dist = createFreqDist(text);
 				break;
 			
 			//AUTOFILL COMMAND
@@ -726,4 +733,25 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 	}
 
 	return FD;
+}
+
+unordered_map <string, int> assignValues(unordered_map<string, int> freq_dist)
+{
+	unordered_map<string, int> word_codes{};
+
+	//Creating priority queue from unordered map
+	priority_queue<pair<string, int>> words_q{};
+	for (auto i : freq_dist)
+	{
+		words_q.push(i);
+	}
+
+	//Create a new unordered map with corresponding unique int values
+	for (int i = 0; i < words_q.size(); i++)
+	{
+		word_codes[words_q.top().first] = i;
+		words_q.pop();
+	}
+
+	return word_codes;
 }
