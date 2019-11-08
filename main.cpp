@@ -346,18 +346,22 @@ int main(int argc, char* argv[])
 				//Run auto-fill subroutine and grab user selection
 				word_to_insert = auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
 
-				wclear(input_window);
-
-				//Insert remaining characters from user selection one at a time
-				for (int i = 0; i < word_to_insert.length(); i++)
+				//If auto_fill() returned a word, insert selection
+				if (!word_to_insert.empty())
 				{
-					insertCharacterIntoLine(text, word_to_insert[i], current_line_num, current_line_index);
-					outputVector(input_window, render_line_start, render_index_start, text);
+					wclear(input_window);
 
-					//Move right by one
-					input_cursor_x++;
-					current_line_index++;
-					wmove(input_window, input_cursor_y, input_cursor_x);
+					//Insert remaining characters from user selection one at a time
+					for (int i = 0; i < word_to_insert.length(); i++)
+					{
+						insertCharacterIntoLine(text, word_to_insert[i], current_line_num, current_line_index);
+						outputVector(input_window, render_line_start, render_index_start, text);
+
+						//Move right by one
+						input_cursor_x++;
+						current_line_index++;
+						wmove(input_window, input_cursor_y, input_cursor_x);
+					}
 				}
 
 				break;
@@ -704,7 +708,7 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 	{
 		for (int j = 0; j < text[i].size(); j++)
 		{
-			//Grab character from line
+			//Convert chtype to plain char
 			current_ch = text[i][j] - A_ATTRIBUTES;
 
 			//If character is a lowercase letter, push it to word
@@ -712,7 +716,7 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 			{
 				current_word.push_back(current_ch);
 			}
-			//Otherwise if the current word has characters, increment frequency and clear word
+			//Otherwise increment frequency of current word (if non-empty)
 			else if(!current_word.empty())
 			{
 				FD[current_word]++;
