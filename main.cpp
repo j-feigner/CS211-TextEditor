@@ -11,26 +11,35 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <sstream>
+#include <queue>
+#include "trie.hpp"
 
 #define PDC_DLL_BUILD 1
 
-#define BACKSPACE 8
-#define CTRL_E 5
-#define CTRL_S 19
-#define NEWLINE 10
+#define SPACE       32
+#define BACKSPACE   8
+#define CTRL_E      5
+#define CTRL_S      19
+#define CTRL_A      1
+#define NEWLINE     10
 
 using namespace std;
 
 WINDOW* setBorders(char* file_name);
-//Setter function for borders window. Requires external window refresh.
-//Expects character pointer to current file name (command line char* argv[1])
+//Setter function for borders window.
+//Expects command line argument for file name.
 
 WINDOW* setInputWindow();
 //Setter function for input window.
-//Requires external winddow refresh.
 
-void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text);
+WINDOW* setAutoFillWindow(vector<string> matches, int selection, int y, int x);
+//Setter function for auto-fill box.
+//Called in auto_fill(), expects user selection and cursor position
+
+void readFileToVector(ifstream& input_file, vector<string>& keywords);
+//Reads file contents into an empty vector of strings for use in auto-fill.
+
+void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
 //Each sub-vector should be terminated with a newline, except the final line.
 
@@ -60,6 +69,12 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
 
+string auto_fill(Trie source, string word_buffer, int y, int x);
+//Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
+
+void emptyQueue(queue<char>& q);
+//Empties a queue
+
 int main(int argc, char* argv[])
 {
 	//Initialize screen, begin curses mode, stdscr settings
@@ -70,11 +85,17 @@ int main(int argc, char* argv[])
 
 	//File streams
 	ifstream input_file{ argv[1] };
+	ifstream keyword_file{ "cpp_keywords.txt" };
 	ofstream output_file{ "test_output.txt" };
+	
+	//Initialize and fill keywords vector and trie
+	vector<string> cpp_keywords{};
+	readFileToVector(keyword_file, cpp_keywords);
+	Trie cpp_trie(cpp_keywords);
 
 	//Initialize and fill main text vector
 	vector<vector<chtype>> text{};
-	readFileToVector(input_file, text);
+	readFileTo2DVector(input_file, text);
 
 	//Set windows
 	WINDOW* borders_window = setBorders(argv[1]);
@@ -90,24 +111,19 @@ int main(int argc, char* argv[])
 	/* Input Variables */
 	//Grabs input char from user
 	int user_input = 0;
-	//Tracks location of user cursor in input window
+	//Tracks location of user cursor IN WINDOW
 	int input_cursor_y = 0;
 	int input_cursor_x = 0;
-	//Tracks location of user input location in vector (i, j)
-	long int current_line_num = 0;
-	long int current_line_index = 0;
+	//Tracks location of user input location IN VECTOR (i, j)
+	int current_line_num = 0;
+	int current_line_index = 0;
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
-
-	//Iterators to point to user edit location in vector for inserts.
-	//Currently using these inside of the insert function, may find a 
-	//better way to utilize these as user position trackers instead
-	//of current_line_num and current_line_index integers later.
-	/*
-		vector<vector<chtype>>::iterator  line = text.begin();
-		vector<chtype>::iterator		  index = line->begin();
-	*/
+	//String to track current word user is entering for auto-fill functionality
+	string word_buffer = "";
+	//String returned from auto-fill function to be inserted into window
+	string word_to_insert = "";
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -173,7 +189,8 @@ int main(int argc, char* argv[])
 				{
 					break;
 				}
-				//TEMPORARY CHECK: if line below is smaller than current line, do nothing
+				//NOT WORKING PROPERLY
+				//TODO: move cursor approriately in this case
 				else if (text[current_line_num + 1].size() <= current_line_index)
 				{
 					break;
@@ -259,6 +276,12 @@ int main(int argc, char* argv[])
 				}
 
 			case BACKSPACE:
+				//Delete last char from buffer if not empty
+				if (!word_buffer.empty())
+				{
+					word_buffer.pop_back();
+				}
+
 				//If cursor is at the beginning of the line, delete line
 				if (current_line_index == 0)
 				{
@@ -293,6 +316,9 @@ int main(int argc, char* argv[])
 				break;
 
 			case NEWLINE:
+				//Clear buffer (new word)
+				word_buffer.clear();
+
 				//TODO: add scroll down functionality if in last line of window
 				//Insert and output
 				insertNewlineIntoVector(text, current_line_num, current_line_index);
@@ -307,12 +333,45 @@ int main(int argc, char* argv[])
 				wmove(input_window, input_cursor_y, input_cursor_x);
 				break;
 
+			//SAVE COMMAND
 			case CTRL_S:
 				writeVectorToFile(output_file, text);
+				break;
+			
+			//AUTOFILL COMMAND
+			case CTRL_A:
+				//Run auto-fill subroutine and grab user selection
+				word_to_insert = auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
+
+				wclear(input_window);
+
+				//Insert remaining characters from user selection one at a time
+				for (int i = 0; i < word_to_insert.length(); i++)
+				{
+					insertCharacterIntoLine(text, word_to_insert[i], current_line_num, current_line_index);
+					outputVector(input_window, render_line_start, render_index_start, text);
+
+					//Move right by one
+					input_cursor_x++;
+					current_line_index++;
+					wmove(input_window, input_cursor_y, input_cursor_x);
+				}
+
 				break;
 
 			//DEFAULT: insert character		
 			default:
+				//TEMPORARY: if user_input is a space, empty buffer for new word
+				if (user_input == SPACE)
+				{
+					word_buffer.clear();
+				}
+				//Otherwise add character to word buffer
+				else
+				{
+					word_buffer.push_back(user_input);
+				}
+
 				//If cursor is at the right of the window,
 				//insert character to line and scroll right
 				if (input_cursor_x == input_window->_maxx - 1)
@@ -381,7 +440,7 @@ WINDOW* setBorders(char* file_name)
 	mvwaddstr(borders, LINES - 2, 0, "^S Save \t ^C Copy \t ^V Paste");
 	mvwaddstr(borders, LINES - 2, COLS - 8, "Line#");
 
-	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^O Open \t ^X Cut  ");
+	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^O Open \t ^A Fill");
 	mvwaddch(borders, LINES - 1, COLS - 6, '/');
 
 	return borders;
@@ -395,7 +454,52 @@ WINDOW* setInputWindow()
 	return input;
 }
 
-void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text)
+WINDOW* setAutoFillWindow(vector<string> matches, int selection, int y, int x)
+{
+	//Adjust window offset here
+	y += 2;
+
+	WINDOW* auto_fill;
+
+	auto_fill = newwin(7, 20, y, x);
+	box(auto_fill, 0, 0);
+
+	//Output the first five matches
+	for (int i = 0; i < 5 && i < matches.size(); i++)
+	{
+		//Highlight the user selection
+		if (i == selection)
+		{
+			wattron(auto_fill, WA_REVERSE);
+			mvwaddstr(auto_fill, i + 1, 1, matches[i].c_str());
+			wattroff(auto_fill, WA_REVERSE);
+		}
+		else
+		{
+			mvwaddstr(auto_fill, i + 1, 1, matches[i].c_str());
+		}
+	}
+
+	return auto_fill;
+}
+
+void readFileToVector(ifstream& input_file, vector<string>& keywords)
+{
+	string current = "";
+
+	if (input_file.is_open())
+	{
+		for (int i = 0; input_file.good(); i++)
+		{
+			getline(input_file, current);
+			keywords.push_back(current);
+		}
+	}
+
+	return;
+}
+
+void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text)
 {
 	vector<chtype> line{};
 	char current = NULL;
@@ -413,8 +517,8 @@ void readFileToVector(ifstream& input_file, vector<vector<chtype>>& text)
 				text.push_back(line);
 				line.clear();
 			}
-			//If any other char, push to current line
-			else
+			//If any other non-EOF char, push to current line
+			else if (current != EOF)
 			{
 				line.push_back(current);
 			}
@@ -458,12 +562,13 @@ void outputVector(WINDOW* window, int line_num, int line_index, const vector<vec
 		for (int j = line_index; j < text[i].size() && output_cursor_x < window->_maxx; j++)
 		{
 			mvwaddch(window, output_cursor_y, output_cursor_x, text[i][j]);
-			//wrefresh(window);
 			output_cursor_x++;
 		}
 		output_cursor_x = 0;
 		output_cursor_y++;
 	}
+	//Prevents last line from retaining any leftover character data
+	wclrtoeol(window);
 	return;
 }
 
@@ -517,5 +622,76 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 {
 
 
+	return;
+}
+
+string auto_fill(Trie source, string word_buffer, int y, int x)
+{
+	vector<string> matches = source.findMatches(word_buffer);
+
+	//If not matches found, exit function
+	if (matches.empty())
+	{
+		return "";
+	}
+
+	int selection = 0;
+	int user_input = 0;
+
+	WINDOW* auto_fill_window = setAutoFillWindow(matches, selection, y, x);
+	wrefresh(auto_fill_window);
+
+	//Loop until newline is entered
+	while (user_input != NEWLINE)
+	{
+		user_input = getch();
+
+		switch(user_input)
+		{
+			//If not in first position, move selection up
+			case KEY_UP:
+				if (selection == 0)
+				{
+					break;
+				}
+				else
+				{
+					selection--;
+					auto_fill_window = setAutoFillWindow(matches, selection, y, x);
+					wrefresh(auto_fill_window);
+					break;
+				}
+			
+			//If not in last position, move selection down
+			case KEY_DOWN:
+				if (selection == 4 || selection == matches.size())
+				{
+					break;
+				}
+				else
+				{
+					selection++;
+					auto_fill_window = setAutoFillWindow(matches, selection, y, x);
+					wrefresh(auto_fill_window);
+					break;
+				}
+
+			default:
+				break;
+		}
+	}
+
+	//Grab user selected string
+	string to_insert = matches[selection];
+
+	//Erase characters already entered by user
+	to_insert.erase(0, word_buffer.length());
+
+	return to_insert;
+}
+
+void emptyQueue(queue<char>& q)
+{
+	q = queue<char> {};
 	return;
 }
