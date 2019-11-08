@@ -14,6 +14,7 @@
 #include <queue>
 #include <bitset>
 #include <cmath>
+#include <stack>
 #include "trie.hpp"
 
 #define PDC_DLL_BUILD 1
@@ -75,6 +76,8 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 
 string auto_fill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
+
+string intToBinaryString(int x);
 
 unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
 //Fills a hashtable with the frequencies of strings in text data
@@ -551,6 +554,7 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 {
 	char chtype_to_char = NULL;
 
+	//Loop through text and output one character at a time.
 	if (output_file.good())
 	{
 		for (int i = 0; i < text.size(); i++)
@@ -573,6 +577,7 @@ void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, un
 
 	if (output_file.good())
 	{
+		//Loop through text file, find words, output corresponding code
 		for (int i = 0; i < text.size(); i++)
 		{
 			for (int j = 0; j < text[i].size(); j++)
@@ -737,6 +742,38 @@ string auto_fill(Trie source, string word_buffer, int y, int x)
 	return to_insert;
 }
 
+string intToBinaryString(int x)
+{
+	//Base Case: most common word will return 0
+	if (x == 0)
+	{
+		return "0";
+	}
+
+	stack<char> rem_stack{};
+	int rem = 0;
+	char binary_char = NULL;
+
+	//Convert integer to shortest possible binary string
+	while (x > 0)
+	{
+		rem = x % 2;
+		x /= 2;
+		binary_char = '0' + rem;
+		rem_stack.push(binary_char);
+	}
+
+	string binary_string = "";
+
+	while (!rem_stack.empty())
+	{
+		binary_string.push_back(rem_stack.top());
+		rem_stack.pop();
+	}
+
+	return binary_string;
+}
+
 unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 {
 	char current_ch = '/0';
@@ -788,8 +825,8 @@ unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist
 	//Create a new unordered map with corresponding unique int values
 	for (int i = 0; i < num_words; i++)
 	{
-		//Converts i to a binary string of size 3
-		s = bitset<3>(i).to_string();
+		//Converts i to a binary string of size 8
+		s = intToBinaryString(i);
 		word_codes[words_q.top().first] = s;
 		words_q.pop();
 	}
