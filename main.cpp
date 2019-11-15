@@ -50,7 +50,7 @@ void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text);
 void writeOut(ofstream& output_file, const vector<vector<chtype>>& text);
 //Outputs text vector to a plain text file.
 
-void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
+void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
 //Outputs text vector using unordered map of word codes to text file.
 
 void outputVector(WINDOW* window, int line_num, int line_index, const vector<vector<chtype>>& text);
@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 	ifstream keyword_file{ "cpp_keywords.txt" };
 	ofstream output_file{ "test_output.txt" };
 	ofstream coded_output_file{ "test_output.compressed.txt" };
+	ofstream coded_output_file_codes{"word_codes.compressed.txt"};
 	
 	//Initialize and fill keywords vector and trie
 	vector<string> cpp_keywords{};
@@ -357,7 +358,7 @@ int main(int argc, char* argv[])
 			//SAVE COMMAND
 			case CTRL_S:
 				writeOut(output_file, text);
-				writeOutCoded(coded_output_file, text, word_codes);
+				writeOutCoded(coded_output_file, coded_output_file_codes, text, word_codes);
 				break;
 			
 			//AUTOFILL COMMAND
@@ -566,7 +567,7 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 		{
 			for (int j = 0; j < text[i].size(); j++)
 			{
-				                 //raw        //conversion factor
+				                 //chtype     //convert to char
 				chtype_to_char = text[i][j] - A_ATTRIBUTES;
 				output_file << chtype_to_char;
 			}
@@ -575,27 +576,23 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 	return;
 }
 
-void writeOutCoded(ofstream& output_file_text, ofstream& output_file_word_codes, const vector<vector<chtype>>& text_data, unordered_map<string, string> word_codes)
-{
-
-}
-
-void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes)
+void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes)
 {
 	char current_ch = NULL;
 	string current_word = "";
 
-	if (output_file.good())
+	//Output binary strings to output text file
+	if (output_file_text.good())
 	{
-		//Loop through text file, find words, output corresponding code
+		//Loop through text file, find words, output corresponding code from word_codes
 		for (int i = 0; i < text.size(); i++)
 		{
 			for (int j = 0; j < text[i].size(); j++)
 			{
-                                 //raw        //conversion factor
+                             //chtype     //convert to char
 				current_ch = text[i][j] - A_ATTRIBUTES;
 
-				//If character is a lowercase letter, push it to word
+				//If character is a letter, push it to word
 				if (isLetter(current_ch))
 				{
 					current_word.push_back(current_ch);
@@ -603,12 +600,19 @@ void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, un
 				//If any other character, output current word and that char
 				else
 				{
-					output_file << word_codes[current_word] << current_ch;
+					output_file_text << word_codes[current_word] << current_ch;
 					current_word.clear();
 				}
 			}
 		}
 	}
+
+	//Output corresponding word codes to output codes file
+	for (auto i : word_codes)
+	{
+		output_file_codes << i.first << ", " << i.second << endl;
+	}
+
 	return;
 }
 
@@ -808,7 +812,7 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 	{
 		for (int j = 0; j < text[i].size(); j++)
 		{
-			//Convert chtype to plain char
+                         //chtype     //convert to char
 			current_ch = text[i][j] - A_ATTRIBUTES;
 
 			//If character is a letter, push it to word
