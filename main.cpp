@@ -40,12 +40,14 @@ WINDOW* setAutoFillWindow(vector<string> matches, int selection, int y, int x);
 //Setter function for auto-fill box.
 //Called in auto_fill(), expects user selection and cursor position
 
-void readFileToVector(ifstream& input_file, vector<string>& keywords);
+void readKeywordFile(ifstream& input_file, vector<string>& keywords);
 //Reads file contents into an empty vector of strings for use in auto-fill.
 
-void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text);
+void readTextFile(ifstream& input_file, vector<vector<chtype>>& text);
 //Reads file contents into a new, empty vector of vectors of chtypes.
 //Each sub-vector should be terminated with a newline, except the final line.
+
+void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_file, vector<vector<chtype>>& text);
 
 void writeOut(ofstream& output_file, const vector<vector<chtype>>& text);
 //Outputs text vector to a plain text file.
@@ -81,6 +83,9 @@ string auto_fill(Trie source, string word_buffer, int y, int x);
 bool isLetter(char c);
 //Helper function to check whether a char is a letter
 
+char chtypeToChar(chtype c);
+//Helper function to convert PDCurses chtype to plain character
+
 string intToBinaryString(int x);
 //Converts an integer to the smallest possible binary value, represented as a string
 
@@ -104,16 +109,16 @@ int main(int argc, char* argv[])
 	ifstream keyword_file{ "cpp_keywords.txt" };
 	ofstream output_file{ "test_output.txt" };
 	ofstream coded_output_file{ "test_output.compressed.txt" };
-	ofstream coded_output_file_codes{"word_codes.compressed.txt"};
+	ofstream coded_output_file_codes{"word_codes.csv"};
 	
 	//Initialize and fill keywords vector and trie
 	vector<string> cpp_keywords{};
-	readFileToVector(keyword_file, cpp_keywords);
+	readKeywordFile(keyword_file, cpp_keywords);
 	Trie cpp_trie(cpp_keywords);
 
 	//Initialize and fill main text vector
 	vector<vector<chtype>> text{};
-	readFileTo2DVector(input_file, text);
+	readTextFile(input_file, text);
 
 	//Set windows
 	WINDOW* borders_window = setBorders(argv[1]);
@@ -510,7 +515,7 @@ WINDOW* setAutoFillWindow(vector<string> matches, int selection, int y, int x)
 	return auto_fill;
 }
 
-void readFileToVector(ifstream& input_file, vector<string>& keywords)
+void readKeywordFile(ifstream& input_file, vector<string>& keywords)
 {
 	string current = "";
 
@@ -526,7 +531,7 @@ void readFileToVector(ifstream& input_file, vector<string>& keywords)
 	return;
 }
 
-void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text)
+void readTextFile(ifstream& input_file, vector<vector<chtype>>& text)
 {
 	vector<chtype> line{};
 	char current = NULL;
@@ -556,6 +561,23 @@ void readFileTo2DVector(ifstream& input_file, vector<vector<chtype>>& text)
 	return;
 }
 
+void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_file, vector<vector<chtype>>& text)
+{
+	unordered_map<string, string> word_codes{};
+	stringstream word_and_code = "";
+
+	if (csv_word_codes_file.is_open())
+	{
+		while (csv_word_codes_file.good())
+		{
+			getline(csv_word_codes_file, word_and_code);
+
+		}
+	}
+
+	return;
+}
+
 void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 {
 	char chtype_to_char = NULL;
@@ -567,8 +589,7 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 		{
 			for (int j = 0; j < text[i].size(); j++)
 			{
-				                 //chtype     //convert to char
-				chtype_to_char = text[i][j] - A_ATTRIBUTES;
+				chtype_to_char = chtypeToChar(text[i][j]);
 				output_file << chtype_to_char;
 			}
 		}
@@ -589,8 +610,7 @@ void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, cons
 		{
 			for (int j = 0; j < text[i].size(); j++)
 			{
-                             //chtype     //convert to char
-				current_ch = text[i][j] - A_ATTRIBUTES;
+				current_ch = chtypeToChar(text[i][j]);
 
 				//If character is a letter, push it to word
 				if (isLetter(current_ch))
@@ -769,6 +789,11 @@ bool isLetter(char c)
 	return false;
 }
 
+char chtypeToChar(chtype c)
+{
+	return c - A_ATTRIBUTES;
+}
+
 string intToBinaryString(int x)
 {
 	//Base Case: most common word will return 0
@@ -812,8 +837,7 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 	{
 		for (int j = 0; j < text[i].size(); j++)
 		{
-                         //chtype     //convert to char
-			current_ch = text[i][j] - A_ATTRIBUTES;
+			current_ch = chtypeToChar(text[i][j]);
 
 			//If character is a letter, push it to word
 			if (isLetter(current_ch))

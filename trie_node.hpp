@@ -10,7 +10,7 @@ class TrieNode
 private:
 
 	char data;
-	unordered_map <char, TrieNode*> children;
+	unordered_map <char, TrieNode*> children{};
 	bool end;
 
 public:
@@ -25,7 +25,8 @@ public:
 	//Constructor
 	TrieNode(char value)
 	{
-		setValue(value);
+		data = value;
+		end = false;
 	}
 
 	//Setter: data
