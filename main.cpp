@@ -575,6 +575,11 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 	return;
 }
 
+void writeOutCoded(ofstream& output_file_text, ofstream& output_file_word_codes, const vector<vector<chtype>>& text_data, unordered_map<string, string> word_codes)
+{
+
+}
+
 void writeOutCoded(ofstream& output_file, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes)
 {
 	char current_ch = NULL;
@@ -757,10 +762,7 @@ bool isLetter(char c)
 	{
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 string intToBinaryString(int x)
@@ -809,8 +811,8 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 			//Convert chtype to plain char
 			current_ch = text[i][j] - A_ATTRIBUTES;
 
-			//If character is a lowercase letter, push it to word
-			if (current_ch >= 'a' && current_ch <= 'z')
+			//If character is a letter, push it to word
+			if (isLetter(current_ch))
 			{
 				current_word.push_back(current_ch);
 			}
@@ -829,16 +831,16 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist)
 {
 	unordered_map<string, string> word_codes{};
-	string s = "";
 
 	//Creating priority queue from unordered map
 	priority_queue<pair<string, int>, vector<pair<string, int>>, MaxHeapPairComparer> words_q{};
-	for (auto i : freq_dist)
+	for (auto word : freq_dist)
 	{
-		words_q.push(i);
+		words_q.push(word);
 	}
 
 	int num_words = words_q.size();
+	string s = "";
 
 	//Create a new unordered map with corresponding unique int values
 	for (int i = 0; i < num_words; i++)
