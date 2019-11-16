@@ -33,6 +33,12 @@
     <ClInclude Include="trie.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pair_compare.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="binary_compression.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="pdcurses.dll">
@@ -60,6 +66,12 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="cpp_keywords.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="test_output.compressed.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="word_codes.compressed.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

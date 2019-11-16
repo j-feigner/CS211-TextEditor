@@ -123,8 +123,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="binary_compression.hpp" />
     <ClInclude Include="curses.h" />
     <ClInclude Include="curspriv.h" />
+    <ClInclude Include="pair_compare.hpp" />
     <ClInclude Include="panel.h" />
     <ClInclude Include="text.hpp" />
     <ClInclude Include="trie.hpp" />
@@ -149,7 +151,9 @@
   <ItemGroup>
     <Text Include="cpp_keywords.txt" />
     <Text Include="test_input.txt" />
+    <Text Include="test_output.compressed.txt" />
     <Text Include="test_output.txt" />
+    <Text Include="word_codes.compressed.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
