@@ -92,7 +92,7 @@ string intToBinaryString(int x);
 unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
 //Fills a hashtable with the frequencies of strings in text data
 
-unordered_map <string, string> assignValues(unordered_map<string, int> frequency_distribution);
+unordered_map <string, string> createWordCodes(unordered_map<string, int> frequency_distribution);
 //Converts a frequency distribution to an unordered map with ascending values for most common strings
 
 
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 	//Hashtable for storing frequency distribution of words
 	unordered_map<string, int> freq_dist = createFreqDist(text);
 	//Hashtable for storing word codes
-	unordered_map<string, string> word_codes = assignValues(freq_dist);
+	unordered_map<string, string> word_codes = createWordCodes(freq_dist);
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -564,7 +564,7 @@ void readTextFile(ifstream& input_file, vector<vector<chtype>>& text)
 void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_file, vector<vector<chtype>>& text)
 {
 	unordered_map<string, string> word_codes{};
-	stringstream word_and_code = "";
+	string word_and_code = "";
 
 	if (csv_word_codes_file.is_open())
 	{
@@ -602,6 +602,12 @@ void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, cons
 	char current_ch = NULL;
 	string current_word = "";
 
+	//Output corresponding word codes to output codes file
+	for (auto i : word_codes)
+	{
+		output_file_codes << i.first << ", " << i.second << endl;
+	}
+
 	//Output binary strings to output text file
 	if (output_file_text.good())
 	{
@@ -625,12 +631,6 @@ void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, cons
 				}
 			}
 		}
-	}
-
-	//Output corresponding word codes to output codes file
-	for (auto i : word_codes)
-	{
-		output_file_codes << i.first << ", " << i.second << endl;
 	}
 
 	return;
@@ -856,7 +856,7 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 	return FD;
 }
 
-unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist)
+unordered_map <string, string> createWordCodes(unordered_map<string, int> freq_dist)
 {
 	unordered_map<string, string> word_codes{};
 

@@ -47,6 +47,9 @@
     <None Include="pdcurses.exp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\word_codes.csv">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="pdcurses.lib">
@@ -69,9 +72,6 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="test_output.compressed.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="word_codes.compressed.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
