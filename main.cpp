@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 	ifstream keyword_file{ "cpp_keywords.txt" };
 	ofstream output_file{ "test_output.txt" };
 	ofstream coded_output_file{ "test_output.compressed.txt" };
-	ofstream coded_output_file_codes{"word_codes.csv"};
+	ofstream coded_output_file_codes{"test_output.codes.txt"};
 	
 	//Initialize and fill keywords vector and trie
 	vector<string> cpp_keywords{};
