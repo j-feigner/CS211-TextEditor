@@ -105,11 +105,17 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text);
 void insertionSortDisplay(WINDOW* input_window, vector<string>& words);
 //Insertion sort + curses animation
 
-void outputWordsToWindow(WINDOW* input_window, const vector<string>& words);
-//Helper function for curses animation, outputs vector of words to screen
+void quickSortDisplay(WINDOW* input_window, vector<string>& words);
+//Quick sort + curses animation
+
+void quickSortHelper(WINDOW* input_window, vector<string>& data, int start_index, int end_index);
+//Recursive helper function for quick sort
 
 vector<string> grabWords(const vector<vector<chtype>>& text);
 //Creates a vector of all words in text data, currently only grabs letter data
+
+void outputWordsToWindow(WINDOW* input_window, const vector<string>& words);
+//Helper function for curses animation, outputs vector of words to screen
 
 
 int main(int argc, char* argv[])
@@ -933,7 +939,8 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
 
 	//USER SELECTION WILL HAPPEN HERE
 	//INSERTION SORT BY DEFAULT
-	insertionSortDisplay(input_window, words);
+	//insertionSortDisplay(input_window, words);
+	quickSortDisplay(input_window, words);
 
 	ofstream sorted_output_file{ "test_output_sorted.txt" };
 
@@ -963,6 +970,104 @@ void insertionSortDisplay(WINDOW* input_window, vector<string>& words)
 			outputWordsToWindow(input_window, words);
 		}
 	}
+
+	return;
+}
+
+void quickSortDisplay(WINDOW* input_window, vector<string>& words)
+{
+	quickSortHelper(input_window, words, 0, words.size() - 1);
+
+	return;
+}
+
+void quickSortHelper(WINDOW* input_window, vector<string>& data, int start_index, int end_index)
+{
+	//array of size 1 or smaller
+	if (end_index <= start_index)
+	{
+		return;
+	}
+
+	//array of size 2
+	if (end_index - start_index == 1)
+	{
+		if (data[end_index] < data[start_index])
+		{
+			swap(data[end_index], data[start_index]);
+		}
+		return;
+	}
+
+	//must be size 3 or larger
+	//find pivot
+	string first_item = data[start_index];
+	string last_item = data[end_index];
+	int mid_index = (start_index + end_index) / 2;
+	string middle_item = data[mid_index];
+	int pivot_index = start_index;
+
+
+	if (
+		middle_item > first_item && middle_item < last_item //ex: 1 5 10
+		||
+		middle_item < first_item && middle_item > last_item //ex: 10 5 1
+		)
+	{
+		pivot_index = mid_index;
+	}
+	else if (
+		last_item > first_item && last_item < middle_item //ex: 1 10 5
+		||
+		last_item < first_item && last_item > middle_item //ex: 10 1 5
+		)
+	{
+		pivot_index = end_index;
+	}
+
+	//swap pivot with end index
+	string pivot_value = data[pivot_index];
+	swap(data[pivot_index], data[end_index]);
+
+	/*
+	1. Define i = front_index; j = end_index - 1;
+	2. While data[i] < pivot AND i < j
+	a. i++
+	3. While data[j] > pivot and i < j
+	a. j--
+	4. if i != j
+	a. Swap(data[i], data[j])
+	b. GOTO #2
+	*/
+
+	int i = start_index;
+	int j = end_index - 1;
+	while (i < j)
+	{
+		while (data[i] < pivot_value && i < j)
+		{
+			i++;
+		}
+		while (data[j] >= pivot_value && i < j)
+		{
+			j--;
+		}
+		if (i < j)
+		{
+			swap(data[i], data[j]);
+		}
+	}
+
+	//swap pivot back
+	swap(data[i], data[end_index]);
+
+	//Output current iteration with 10 millisecond delay
+	outputWordsToWindow(input_window, data);
+	//delay_output(2);
+
+	//recursively repeat
+	quickSortHelper(input_window, data, start_index, i - 1);
+	quickSortHelper(input_window, data, i + 1, end_index);
 
 	return;
 }

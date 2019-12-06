@@ -34,10 +34,10 @@ Urbanism
 a
 a
 a
-a
 acceleration
-addition
+a
 aesthetic
+addition
 against
 also
 an
@@ -55,10 +55,10 @@ and
 and
 and
 and
-and
-and
 any
+and
 appreciates
+and
 approach
 architect
 architect
@@ -77,9 +77,9 @@ as
 as
 as
 as
-at
 attention
 based
+at
 be
 be
 be
@@ -92,8 +92,8 @@ been
 been
 been
 been
-been
 began
+been
 behavioral
 being
 biodegradable
@@ -134,8 +134,8 @@ design
 design
 design
 design
-design
 designs
+design
 developers
 developing
 develops
@@ -224,8 +224,8 @@ many
 many
 materials
 matters
-matters
 meet
+matters
 meets
 members
 metaphoric
@@ -289,8 +289,8 @@ profound
 project
 project
 project
-project
 promote
+project
 provide
 pursuit
 quality
@@ -339,9 +339,9 @@ sustainable
 sustainable
 sustainable
 sustainable
-system
 systems
 techniques
+system
 technological
 technologies
 technology
@@ -374,11 +374,11 @@ the
 the
 the
 the
-the
 there
 this
 this
 those
+the
 to
 to
 to
@@ -411,5 +411,5 @@ with
 with
 with
 with
-with
 work
+with
