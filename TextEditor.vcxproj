@@ -127,7 +127,7 @@
     <ClInclude Include="curspriv.h" />
     <ClInclude Include="pair_compare.hpp" />
     <ClInclude Include="panel.h" />
-    <ClInclude Include="sorters.hpp" />
+    <ClInclude Include="curses_sorter.hpp" />
     <ClInclude Include="trie.hpp" />
     <ClInclude Include="trie_node.hpp" />
   </ItemGroup>

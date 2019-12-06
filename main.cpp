@@ -18,7 +18,7 @@
 
 #include "trie.hpp"
 #include "pair_compare.hpp"
-#include "sorters.hpp"
+#include "curses_sorter.hpp"
 
 #define PDC_DLL_BUILD 1
 
@@ -902,7 +902,8 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
 	//USER SELECTION WILL HAPPEN HERE
 	//INSERTION SORT BY DEFAULT
 	//insertionSortDisplay(input_window, words);
-	quickSortDisplay(input_window, words);
+	//quickSortDisplay(input_window, words);
+	selectionSortDisplay(input_window, words);
 
 	ofstream sorted_output_file{ "test_output_sorted.txt" };
 
