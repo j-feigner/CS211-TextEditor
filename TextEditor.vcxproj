@@ -123,6 +123,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\insertion_sort.hpp" />
+    <ClInclude Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\sorter.hpp" />
     <ClInclude Include="binary_compression.hpp" />
     <ClInclude Include="curses.h" />
     <ClInclude Include="curspriv.h" />
@@ -150,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output.codes.txt" />
+    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output_sorted.txt" />
     <Text Include="cpp_keywords.txt" />
     <Text Include="test_input.txt" />
     <Text Include="test_output.compressed.txt" />

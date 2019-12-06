@@ -89,11 +89,14 @@ char chtypeToChar(chtype c);
 string intToBinaryString(int x);
 //Converts an integer to the smallest possible binary value, represented as a string
 
-unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
+unordered_map<string, int> createFreqDist(const vector<vector<chtype>>& text);
 //Fills a hashtable with the frequencies of strings in text data
 
-unordered_map <string, string> createWordCodes(unordered_map<string, int> frequency_distribution);
+unordered_map<string, string> createWordCodes(unordered_map<string, int> frequency_distribution);
 //Converts a frequency distribution to an unordered map with ascending values for most common strings
+
+vector<string> grabWords(const vector<vector<string>>& text);
+//Creates a vector of all words in text data
 
 
 int main(int argc, char* argv[])
@@ -469,10 +472,10 @@ WINDOW* setBorders(char* file_name)
 	mvwaddstr(borders, 0, COLS / 2, file_name);
 
 	//Command Bar Strings
-	mvwaddstr(borders, LINES - 2, 0, "^S Save \t ^C Copy \t ^V Paste");
+	mvwaddstr(borders, LINES - 2, 0, "^S Save \t ^O Sort");
 	mvwaddstr(borders, LINES - 2, COLS - 8, "Line#");
 
-	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^O Open \t ^A Fill");
+	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^A Fill");
 	mvwaddch(borders, LINES - 1, COLS - 6, '/');
 
 	return borders;
@@ -880,4 +883,33 @@ unordered_map <string, string> createWordCodes(unordered_map<string, int> freq_d
 	}
 
 	return word_codes;
+}
+
+vector<string> grabWords(const vector<vector<chtype>>& text)
+{
+	vector<string> words{};
+	string current_word = "";
+	char current_ch = '/0';
+
+	for (int i = 0; i < text.size(); i++)
+	{
+		for (int j = 0; j < text[i].size(); j++)
+		{
+			current_ch = chtypeToChar(text[i][j]);
+
+			//If character is a letter, push it to word
+			if (isLetter(current_ch))
+			{
+				current_word.push_back(current_ch);
+			}
+			//Otherwise push word to vector
+			else if (!current_word.empty())
+			{
+				words.push_back(current_word);
+				current_word.clear();
+			}
+		}
+	}
+
+	return words;
 }

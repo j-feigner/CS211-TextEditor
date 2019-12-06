@@ -39,6 +39,12 @@
     <ClInclude Include="binary_compression.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\insertion_sort.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\sorter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="pdcurses.dll">
@@ -72,6 +78,9 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output.codes.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output_sorted.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
