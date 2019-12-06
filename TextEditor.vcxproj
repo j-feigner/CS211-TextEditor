@@ -123,12 +123,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="binary_compression.hpp" />
     <ClInclude Include="curses.h" />
     <ClInclude Include="curspriv.h" />
     <ClInclude Include="pair_compare.hpp" />
     <ClInclude Include="panel.h" />
-    <ClInclude Include="text.hpp" />
     <ClInclude Include="trie.hpp" />
     <ClInclude Include="trie_node.hpp" />
   </ItemGroup>
@@ -149,11 +147,12 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output.codes.txt" />
+    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output_sorted.txt" />
     <Text Include="cpp_keywords.txt" />
     <Text Include="test_input.txt" />
     <Text Include="test_output.compressed.txt" />
     <Text Include="test_output.txt" />
-    <Text Include="word_codes.compressed.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

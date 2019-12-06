@@ -24,9 +24,6 @@
     <ClInclude Include="panel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="text.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="trie_node.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -34,9 +31,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pair_compare.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="binary_compression.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,7 +65,10 @@
     <Text Include="test_output.compressed.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="word_codes.compressed.txt">
+    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output.codes.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output_sorted.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

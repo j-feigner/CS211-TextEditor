@@ -25,6 +25,7 @@
 #define CTRL_E      5
 #define CTRL_S      19
 #define CTRL_A      1
+#define CTRL_O		15
 #define NEWLINE     10
 
 using namespace std;
@@ -55,6 +56,9 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text);
 void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
 //Outputs text vector using unordered map of word codes to text file.
 
+void writeOutSorted(ofstream& output_file, const vector<string>& words);
+//Ouputs sorted words to text file.
+
 void outputVector(WINDOW* window, int line_num, int line_index, const vector<vector<chtype>>& text);
 //Outputs current vector contents to the input window from the coordiantes (line_num, line_index).
 //These coordinates do NOT have to corespond to an actual location in the vector, they are an imaginary starting point.
@@ -77,7 +81,7 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
 
-string auto_fill(Trie source, string word_buffer, int y, int x);
+string autoFill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
 bool isLetter(char c);
@@ -89,11 +93,23 @@ char chtypeToChar(chtype c);
 string intToBinaryString(int x);
 //Converts an integer to the smallest possible binary value, represented as a string
 
-unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text);
+unordered_map<string, int> createFreqDist(const vector<vector<chtype>>& text);
 //Fills a hashtable with the frequencies of strings in text data
 
-unordered_map <string, string> assignValues(unordered_map<string, int> frequency_distribution);
+unordered_map<string, string> createWordCodes(unordered_map<string, int> frequency_distribution);
 //Converts a frequency distribution to an unordered map with ascending values for most common strings
+
+void sortText(WINDOW* input_window, const vector<vector<chtype>>& text);
+//Main sort serlection subroutine, similar structure to auto-fill
+
+void insertionSortDisplay(WINDOW* input_window, vector<string>& words);
+//Insertion sort + curses animation
+
+void outputWordsToWindow(WINDOW* input_window, const vector<string>& words);
+//Helper function for curses animation, outputs vector of words to screen
+
+vector<string> grabWords(const vector<vector<chtype>>& text);
+//Creates a vector of all words in text data
 
 
 int main(int argc, char* argv[])
@@ -109,7 +125,7 @@ int main(int argc, char* argv[])
 	ifstream keyword_file{ "cpp_keywords.txt" };
 	ofstream output_file{ "test_output.txt" };
 	ofstream coded_output_file{ "test_output.compressed.txt" };
-	ofstream coded_output_file_codes{"word_codes.csv"};
+	ofstream coded_output_file_codes{"test_output.codes.txt"};
 	
 	//Initialize and fill keywords vector and trie
 	vector<string> cpp_keywords{};
@@ -143,6 +159,8 @@ int main(int argc, char* argv[])
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
+
+	/* Auto-Fill Variables */
 	//String to track current word user is entering for auto-fill functionality
 	string word_buffer = "";
 	//String returned from auto-fill function to be inserted into window
@@ -150,7 +168,7 @@ int main(int argc, char* argv[])
 	//Hashtable for storing frequency distribution of words
 	unordered_map<string, int> freq_dist = createFreqDist(text);
 	//Hashtable for storing word codes
-	unordered_map<string, string> word_codes = assignValues(freq_dist);
+	unordered_map<string, string> word_codes = createWordCodes(freq_dist);
 
 	/* INPUT LOOP */
 	wmove(input_window, 0, 0);
@@ -369,7 +387,7 @@ int main(int argc, char* argv[])
 			//AUTOFILL COMMAND
 			case CTRL_A:
 				//Run auto-fill subroutine and grab user selection
-				word_to_insert = auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
+				word_to_insert = autoFill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
 
 				//If auto_fill() returned a word, insert selection
 				if (!word_to_insert.empty())
@@ -388,6 +406,16 @@ int main(int argc, char* argv[])
 						wmove(input_window, input_cursor_y, input_cursor_x);
 					}
 				}
+
+				break;
+
+			case CTRL_O:
+
+				sortText(input_window, text);
+
+				wclear(input_window);
+				outputVector(input_window, render_line_start, render_index_start, text);
+				wmove(input_window, input_cursor_y, input_cursor_x);
 
 				break;
 
@@ -469,10 +497,10 @@ WINDOW* setBorders(char* file_name)
 	mvwaddstr(borders, 0, COLS / 2, file_name);
 
 	//Command Bar Strings
-	mvwaddstr(borders, LINES - 2, 0, "^S Save \t ^C Copy \t ^V Paste");
+	mvwaddstr(borders, LINES - 2, 0, "^S Save \t ^O Sort");
 	mvwaddstr(borders, LINES - 2, COLS - 8, "Line#");
 
-	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^O Open \t ^A Fill");
+	mvwaddstr(borders, LINES - 1, 0, "^E Exit \t ^A Fill");
 	mvwaddch(borders, LINES - 1, COLS - 6, '/');
 
 	return borders;
@@ -564,7 +592,7 @@ void readTextFile(ifstream& input_file, vector<vector<chtype>>& text)
 void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_file, vector<vector<chtype>>& text)
 {
 	unordered_map<string, string> word_codes{};
-	stringstream word_and_code = "";
+	string word_and_code = "";
 
 	if (csv_word_codes_file.is_open())
 	{
@@ -602,6 +630,12 @@ void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, cons
 	char current_ch = NULL;
 	string current_word = "";
 
+	//Output corresponding word codes to output codes file
+	for (auto i : word_codes)
+	{
+		output_file_codes << i.first << ", " << i.second << endl;
+	}
+
 	//Output binary strings to output text file
 	if (output_file_text.good())
 	{
@@ -627,13 +661,18 @@ void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, cons
 		}
 	}
 
-	//Output corresponding word codes to output codes file
-	for (auto i : word_codes)
-	{
-		output_file_codes << i.first << ", " << i.second << endl;
-	}
-
 	return;
+}
+
+void writeOutSorted(ofstream& output_file, const vector<string>& words)
+{
+	if (output_file.good())
+	{
+		for (int i = 0; i < words.size(); i++)
+		{
+			output_file << words[i] << endl;
+		}
+	}
 }
 
 void outputVector(WINDOW* window, int line_num, int line_index, const vector<vector<chtype>>& text)
@@ -711,7 +750,7 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 	return;
 }
 
-string auto_fill(Trie source, string word_buffer, int y, int x)
+string autoFill(Trie source, string word_buffer, int y, int x)
 {
 	vector<string> matches = source.findMatches(word_buffer);
 
@@ -856,7 +895,7 @@ unordered_map <string, int> createFreqDist(const vector<vector<chtype>>& text)
 	return FD;
 }
 
-unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist)
+unordered_map <string, string> createWordCodes(unordered_map<string, int> freq_dist)
 {
 	unordered_map<string, string> word_codes{};
 
@@ -880,4 +919,88 @@ unordered_map <string, string> assignValues(unordered_map<string, int> freq_dist
 	}
 
 	return word_codes;
+}
+
+void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
+{
+	vector<string> words = grabWords(text);
+
+	//USER SELECTION WILL HAPPEN HERE
+	//INSERTION SORT BY DEFAULT
+	insertionSortDisplay(input_window, words);
+
+	ofstream sorted_output_file{ "test_output_sorted.txt" };
+
+	writeOutSorted(sorted_output_file, words);
+
+	return;
+}
+
+void insertionSortDisplay(WINDOW* input_window, vector<string>& words)
+{
+	for (int i = 1; i < words.size(); i++)
+	{
+		for (int j = i; j > 0; j--)
+		{
+			if (words[j] < words[j - 1])
+			{
+				string temp = words[j];
+				words[j] = words[j - 1];
+				words[j - 1] = temp;
+			}
+			else
+			{
+				break;
+			}
+
+			//Outputs current sorted state
+			outputWordsToWindow(input_window, words);
+		}
+	}
+
+	return;
+}
+
+void outputWordsToWindow(WINDOW* input_window, const vector<string>& words)
+{
+	wclear(input_window);
+
+	for (int i = 0; i < words.size(); i++)
+	{
+		waddstr(input_window, words[i].c_str());
+		waddch(input_window, ' ');
+	}
+
+	wrefresh(input_window);
+
+	return;
+}
+
+vector<string> grabWords(const vector<vector<chtype>>& text)
+{
+	vector<string> words{};
+	string current_word = "";
+	char current_ch = '/0';
+
+	for (int i = 0; i < text.size(); i++)
+	{
+		for (int j = 0; j < text[i].size(); j++)
+		{
+			current_ch = chtypeToChar(text[i][j]);
+
+			//If character is a letter, push it to word
+			if (isLetter(current_ch))
+			{
+				current_word.push_back(current_ch);
+			}
+			//Otherwise push word to vector
+			else if (!current_word.empty())
+			{
+				words.push_back(current_word);
+				current_word.clear();
+			}
+		}
+	}
+
+	return words;
 }
