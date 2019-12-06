@@ -57,6 +57,9 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text);
 void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
 //Outputs text vector using unordered map of word codes to text file.
 
+void writeOutSorted(ofstream& output_file, const vector<string>& words);
+//Ouputs sorted words to text file.
+
 void outputVector(WINDOW* window, int line_num, int line_index, const vector<vector<chtype>>& text);
 //Outputs current vector contents to the input window from the coordiantes (line_num, line_index).
 //These coordinates do NOT have to corespond to an actual location in the vector, they are an imaginary starting point.
@@ -103,7 +106,7 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text);
 void insertionSortDisplay(WINDOW* input_window, vector<string>& words);
 //Insertion sort + curses animation
 
-void outputWords(WINDOW* input_window, const vector<string>& words);
+void outputWordsToWindow(WINDOW* input_window, const vector<string>& words);
 //Helper function for curses animation, outputs vector of words to screen
 
 vector<string> grabWords(const vector<vector<chtype>>& text);
@@ -411,6 +414,10 @@ int main(int argc, char* argv[])
 
 				sortText(input_window, text);
 
+				wclear(input_window);
+				outputVector(input_window, render_line_start, render_index_start, text);
+				wmove(input_window, input_cursor_y, input_cursor_x);
+
 				break;
 
 			//DEFAULT: insert character		
@@ -656,6 +663,17 @@ void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, cons
 	}
 
 	return;
+}
+
+void writeOutSorted(ofstream& output_file, const vector<string>& words)
+{
+	if (output_file.good())
+	{
+		for (int i = 0; i < words.size(); i++)
+		{
+			output_file << words[i] << endl;
+		}
+	}
 }
 
 void outputVector(WINDOW* window, int line_num, int line_index, const vector<vector<chtype>>& text)
@@ -912,6 +930,10 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
 	//INSERTION SORT BY DEFAULT
 	insertionSortDisplay(input_window, words);
 
+	ofstream sorted_output_file{ "test_output_sorted.txt" };
+
+	writeOutSorted(sorted_output_file, words);
+
 	return;
 }
 
@@ -933,14 +955,14 @@ void insertionSortDisplay(WINDOW* input_window, vector<string>& words)
 			}
 
 			//Outputs current sorted state
-			outputWords(input_window, words);
+			outputWordsToWindow(input_window, words);
 		}
 	}
 
 	return;
 }
 
-void outputWords(WINDOW* input_window, const vector<string>& words)
+void outputWordsToWindow(WINDOW* input_window, const vector<string>& words)
 {
 	wclear(input_window);
 
