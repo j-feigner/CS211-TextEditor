@@ -17,6 +17,7 @@
 #include <stack>
 #include "trie.hpp"
 #include "pair_compare.hpp"
+#include "insertion_sort.hpp"
 
 #define PDC_DLL_BUILD 1
 
@@ -25,6 +26,7 @@
 #define CTRL_E      5
 #define CTRL_S      19
 #define CTRL_A      1
+#define CTRL_O		15
 #define NEWLINE     10
 
 using namespace std;
@@ -77,7 +79,7 @@ void insertNewlineIntoVector(vector<vector<chtype>>& text, int line_num, int ind
 void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int index);
 //Empty
 
-string auto_fill(Trie source, string word_buffer, int y, int x);
+string autoFill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
 bool isLetter(char c);
@@ -95,7 +97,16 @@ unordered_map<string, int> createFreqDist(const vector<vector<chtype>>& text);
 unordered_map<string, string> createWordCodes(unordered_map<string, int> frequency_distribution);
 //Converts a frequency distribution to an unordered map with ascending values for most common strings
 
-vector<string> grabWords(const vector<vector<string>>& text);
+void sortText(WINDOW* input_window, const vector<vector<chtype>>& text);
+//Main sort serlection subroutine, similar structure to auto-fill
+
+void insertionSortDisplay(WINDOW* input_window, vector<string>& words);
+//Insertion sort + curses animation
+
+void outputWords(WINDOW* input_window, const vector<string>& words);
+//Helper function for curses animation, outputs vector of words to screen
+
+vector<string> grabWords(const vector<vector<chtype>>& text);
 //Creates a vector of all words in text data
 
 
@@ -146,6 +157,8 @@ int main(int argc, char* argv[])
 	//These variables track the starting coordinate of the output
 	int render_line_start = 0;
 	int render_index_start = 0;
+
+	/* Auto-Fill Variables */
 	//String to track current word user is entering for auto-fill functionality
 	string word_buffer = "";
 	//String returned from auto-fill function to be inserted into window
@@ -372,7 +385,7 @@ int main(int argc, char* argv[])
 			//AUTOFILL COMMAND
 			case CTRL_A:
 				//Run auto-fill subroutine and grab user selection
-				word_to_insert = auto_fill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
+				word_to_insert = autoFill(cpp_trie, word_buffer, input_cursor_y, input_cursor_x);
 
 				//If auto_fill() returned a word, insert selection
 				if (!word_to_insert.empty())
@@ -391,6 +404,12 @@ int main(int argc, char* argv[])
 						wmove(input_window, input_cursor_y, input_cursor_x);
 					}
 				}
+
+				break;
+
+			case CTRL_O:
+
+				sortText(input_window, text);
 
 				break;
 
@@ -714,7 +733,7 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 	return;
 }
 
-string auto_fill(Trie source, string word_buffer, int y, int x)
+string autoFill(Trie source, string word_buffer, int y, int x)
 {
 	vector<string> matches = source.findMatches(word_buffer);
 
@@ -883,6 +902,57 @@ unordered_map <string, string> createWordCodes(unordered_map<string, int> freq_d
 	}
 
 	return word_codes;
+}
+
+void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
+{
+	vector<string> words = grabWords(text);
+
+	//USER SELECTION WILL HAPPEN HERE
+	//INSERTION SORT BY DEFAULT
+	insertionSortDisplay(input_window, words);
+
+	return;
+}
+
+void insertionSortDisplay(WINDOW* input_window, vector<string>& words)
+{
+	for (int i = 1; i < words.size(); i++)
+	{
+		for (int j = i; j > 0; j--)
+		{
+			if (words[j] < words[j - 1])
+			{
+				string temp = words[j];
+				words[j] = words[j - 1];
+				words[j - 1] = temp;
+			}
+			else
+			{
+				break;
+			}
+
+			//Outputs current sorted state
+			outputWords(input_window, words);
+		}
+	}
+
+	return;
+}
+
+void outputWords(WINDOW* input_window, const vector<string>& words)
+{
+	wclear(input_window);
+
+	for (int i = 0; i < words.size(); i++)
+	{
+		waddstr(input_window, words[i].c_str());
+		waddch(input_window, ' ');
+	}
+
+	wrefresh(input_window);
+
+	return;
 }
 
 vector<string> grabWords(const vector<vector<chtype>>& text)
