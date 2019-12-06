@@ -24,9 +24,6 @@
     <ClInclude Include="panel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="text.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="trie_node.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -34,15 +31,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pair_compare.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="binary_compression.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\insertion_sort.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\sorter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

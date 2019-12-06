@@ -17,7 +17,6 @@
 #include <stack>
 #include "trie.hpp"
 #include "pair_compare.hpp"
-#include "insertion_sort.hpp"
 
 #define PDC_DLL_BUILD 1
 
