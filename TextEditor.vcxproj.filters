@@ -65,10 +65,10 @@
     <Text Include="test_output.compressed.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output.codes.txt">
+    <Text Include="test_output.codes.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="..\..\..\..\Jordan%27s PC\Documents\GitHub\CS211-TextEditor\test_output_sorted.txt">
+    <Text Include="test_output_sorted.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

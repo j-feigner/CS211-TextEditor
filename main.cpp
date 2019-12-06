@@ -50,10 +50,10 @@ void readTextFile(ifstream& input_file, vector<vector<chtype>>& text);
 
 void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_file, vector<vector<chtype>>& text);
 
-void writeOut(ofstream& output_file, const vector<vector<chtype>>& text);
+void writeOut(const vector<vector<chtype>>& text);
 //Outputs text vector to a plain text file.
 
-void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
+void writeOutCoded(const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
 //Outputs text vector using unordered map of word codes to text file.
 
 void writeOutSorted(ofstream& output_file, const vector<string>& words);
@@ -109,7 +109,7 @@ void outputWordsToWindow(WINDOW* input_window, const vector<string>& words);
 //Helper function for curses animation, outputs vector of words to screen
 
 vector<string> grabWords(const vector<vector<chtype>>& text);
-//Creates a vector of all words in text data
+//Creates a vector of all words in text data, currently only grabs letter data
 
 
 int main(int argc, char* argv[])
@@ -123,9 +123,6 @@ int main(int argc, char* argv[])
 	//File streams
 	ifstream input_file{ argv[1] };
 	ifstream keyword_file{ "cpp_keywords.txt" };
-	ofstream output_file{ "test_output.txt" };
-	ofstream coded_output_file{ "test_output.compressed.txt" };
-	ofstream coded_output_file_codes{"test_output.codes.txt"};
 	
 	//Initialize and fill keywords vector and trie
 	vector<string> cpp_keywords{};
@@ -380,8 +377,8 @@ int main(int argc, char* argv[])
 
 			//SAVE COMMAND
 			case CTRL_S:
-				writeOut(output_file, text);
-				writeOutCoded(coded_output_file, coded_output_file_codes, text, word_codes);
+				writeOut(text);
+				writeOutCoded(text, word_codes);
 				break;
 			
 			//AUTOFILL COMMAND
@@ -410,9 +407,13 @@ int main(int argc, char* argv[])
 				break;
 
 			case CTRL_O:
-
+				//Main sorter sub routine for user selection and sorter display
 				sortText(input_window, text);
 
+				//Wait for any key press
+				wgetch(input_window);
+
+				//Redraw text data and put cursor to former location
 				wclear(input_window);
 				outputVector(input_window, render_line_start, render_index_start, text);
 				wmove(input_window, input_cursor_y, input_cursor_x);
@@ -606,8 +607,10 @@ void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_f
 	return;
 }
 
-void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
+void writeOut(const vector<vector<chtype>>& text)
 {
+	ofstream output_file{ "test_output.txt" };
+
 	char chtype_to_char = NULL;
 
 	//Loop through text and output one character at a time.
@@ -625,8 +628,11 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 	return;
 }
 
-void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes)
+void writeOutCoded(const vector<vector<chtype>>& text, unordered_map<string, string> word_codes)
 {
+	ofstream output_file_text{ "test_output.compressed.txt" };
+	ofstream output_file_codes{ "test_output.codes.txt" };
+
 	char current_ch = NULL;
 	string current_word = "";
 
