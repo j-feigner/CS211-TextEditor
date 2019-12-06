@@ -899,11 +899,77 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
 {
 	vector<string> words = grabWords(text);
 
-	//USER SELECTION WILL HAPPEN HERE
-	//INSERTION SORT BY DEFAULT
-	//insertionSortDisplay(input_window, words);
-	//quickSortDisplay(input_window, words);
-	selectionSortDisplay(input_window, words);
+	/* User Selection will happen here */
+	//Vector of sorter options available
+	vector<string> sorters{ "Insertion Sort",
+						    "Selection Sort",
+						    "Bubble Sort   ",
+						    "Quick Sort    " };
+
+	//Create window outline and draw 
+	int selection = 0;
+	WINDOW* sort_selection_window = outputSorterSelections(sorters, selection);
+	wrefresh(sort_selection_window);
+
+	//Loop until newline is entered
+	int user_input = 0;
+
+	while (user_input != NEWLINE)
+	{
+		user_input = getch();
+
+		switch (user_input)
+		{
+		//If not in first position, move selection up
+		case KEY_UP:
+			if (selection == 0)
+			{
+				break;
+			}
+			else
+			{
+				selection--;
+				sort_selection_window = outputSorterSelections(sorters, selection);
+				wrefresh(sort_selection_window);
+				break;
+			}
+
+		//If not in last position, move selection down
+		case KEY_DOWN:
+			if (selection == 3)
+			{
+				break;
+			}
+			else
+			{
+				selection++;
+				sort_selection_window = outputSorterSelections(sorters, selection);
+				wrefresh(sort_selection_window);
+				break;
+			}
+
+		default:
+			break;
+		}
+	}
+
+	//Run sort based on user input
+	if (selection == 0)
+	{
+		insertionSortDisplay(input_window, words);
+	}
+	else if (selection == 1)
+	{
+		selectionSortDisplay(input_window, words);
+	}
+	else if (selection == 2)
+	{
+		bubbleSortDisplay(input_window, words);
+	}
+	else if (selection == 3)
+	{
+		quickSortDisplay(input_window, words);
+	}
 
 	ofstream sorted_output_file{ "test_output_sorted.txt" };
 
