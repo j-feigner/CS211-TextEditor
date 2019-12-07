@@ -193,14 +193,14 @@ void quickSortHelper(WINDOW * input_window, vector<string> & words, int start_in
 		{
 			swap(words[i], words[j]);
 		}
+		//Output current iteration with optional delay
+		outputWordsToWindow(input_window, words);
+		//delay_output(10);
 	}
 
 	//swap pivot back
 	swap(words[i], words[end_index]);
 
-	//Output current iteration with 10 millisecond delay
-	outputWordsToWindow(input_window, words);
-	//delay_output(2);
 
 	//recursively repeat
 	quickSortHelper(input_window, words, start_index, i - 1);

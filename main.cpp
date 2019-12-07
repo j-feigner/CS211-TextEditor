@@ -899,7 +899,6 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
 {
 	vector<string> words = grabWords(text);
 
-	/* User Selection will happen here */
 	//Vector of sorter options available
 	vector<string> sorters{ "Insertion Sort",
 						    "Selection Sort",
