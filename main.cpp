@@ -15,8 +15,10 @@
 #include <bitset>
 #include <cmath>
 #include <stack>
+
 #include "trie.hpp"
 #include "pair_compare.hpp"
+#include "curses_sorter.hpp"
 
 #define PDC_DLL_BUILD 1
 
@@ -50,10 +52,10 @@ void readTextFile(ifstream& input_file, vector<vector<chtype>>& text);
 
 void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_file, vector<vector<chtype>>& text);
 
-void writeOut(ofstream& output_file, const vector<vector<chtype>>& text);
+void writeOut(const vector<vector<chtype>>& text);
 //Outputs text vector to a plain text file.
 
-void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
+void writeOutCoded(const vector<vector<chtype>>& text, unordered_map<string, string> word_codes);
 //Outputs text vector using unordered map of word codes to text file.
 
 void writeOutSorted(ofstream& output_file, const vector<string>& words);
@@ -84,12 +86,6 @@ void deleteNewlineFromVector(vector<vector<chtype>>& text, int line_num, int ind
 string autoFill(Trie source, string word_buffer, int y, int x);
 //Main function for auto fill subroutine, y and x are draw coordinates (current cursor pos)
 
-bool isLetter(char c);
-//Helper function to check whether a char is a letter
-
-char chtypeToChar(chtype c);
-//Helper function to convert PDCurses chtype to plain character
-
 string intToBinaryString(int x);
 //Converts an integer to the smallest possible binary value, represented as a string
 
@@ -102,16 +98,6 @@ unordered_map<string, string> createWordCodes(unordered_map<string, int> frequen
 void sortText(WINDOW* input_window, const vector<vector<chtype>>& text);
 //Main sort serlection subroutine, similar structure to auto-fill
 
-void insertionSortDisplay(WINDOW* input_window, vector<string>& words);
-//Insertion sort + curses animation
-
-void outputWordsToWindow(WINDOW* input_window, const vector<string>& words);
-//Helper function for curses animation, outputs vector of words to screen
-
-vector<string> grabWords(const vector<vector<chtype>>& text);
-//Creates a vector of all words in text data
-
-
 int main(int argc, char* argv[])
 {
 	//Initialize screen, begin curses mode, stdscr settings
@@ -123,9 +109,6 @@ int main(int argc, char* argv[])
 	//File streams
 	ifstream input_file{ argv[1] };
 	ifstream keyword_file{ "cpp_keywords.txt" };
-	ofstream output_file{ "test_output.txt" };
-	ofstream coded_output_file{ "test_output.compressed.txt" };
-	ofstream coded_output_file_codes{"test_output.codes.txt"};
 	
 	//Initialize and fill keywords vector and trie
 	vector<string> cpp_keywords{};
@@ -380,8 +363,8 @@ int main(int argc, char* argv[])
 
 			//SAVE COMMAND
 			case CTRL_S:
-				writeOut(output_file, text);
-				writeOutCoded(coded_output_file, coded_output_file_codes, text, word_codes);
+				writeOut(text);
+				writeOutCoded(text, word_codes);
 				break;
 			
 			//AUTOFILL COMMAND
@@ -410,9 +393,13 @@ int main(int argc, char* argv[])
 				break;
 
 			case CTRL_O:
-
+				//Main sorter sub routine for user selection and sorter display
 				sortText(input_window, text);
 
+				//Wait for any key press
+				wgetch(input_window);
+
+				//Redraw text data and put cursor to former location
 				wclear(input_window);
 				outputVector(input_window, render_line_start, render_index_start, text);
 				wmove(input_window, input_cursor_y, input_cursor_x);
@@ -606,8 +593,10 @@ void readCodedFile(ifstream& binary_string_data_file, ifstream& csv_word_codes_f
 	return;
 }
 
-void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
+void writeOut(const vector<vector<chtype>>& text)
 {
+	ofstream output_file{ "test_output.txt" };
+
 	char chtype_to_char = NULL;
 
 	//Loop through text and output one character at a time.
@@ -625,8 +614,11 @@ void writeOut(ofstream& output_file, const vector<vector<chtype>>& text)
 	return;
 }
 
-void writeOutCoded(ofstream& output_file_text, ofstream& output_file_codes, const vector<vector<chtype>>& text, unordered_map<string, string> word_codes)
+void writeOutCoded(const vector<vector<chtype>>& text, unordered_map<string, string> word_codes)
 {
+	ofstream output_file_text{ "test_output.compressed.txt" };
+	ofstream output_file_codes{ "test_output.codes.txt" };
+
 	char current_ch = NULL;
 	string current_word = "";
 
@@ -815,24 +807,6 @@ string autoFill(Trie source, string word_buffer, int y, int x)
 	return to_insert;
 }
 
-bool isLetter(char c)
-{
-	if (c >= 'a' && c <= 'z')
-	{
-		return true;
-	}
-	else if (c >= 'A' && c <= 'Z')
-	{
-		return true;
-	}
-	return false;
-}
-
-char chtypeToChar(chtype c)
-{
-	return c - A_ATTRIBUTES;
-}
-
 string intToBinaryString(int x)
 {
 	//Base Case: most common word will return 0
@@ -925,82 +899,80 @@ void sortText(WINDOW* input_window, const vector<vector<chtype>>& text)
 {
 	vector<string> words = grabWords(text);
 
-	//USER SELECTION WILL HAPPEN HERE
-	//INSERTION SORT BY DEFAULT
-	insertionSortDisplay(input_window, words);
+	//Vector of sorter options available
+	vector<string> sorters{ "Insertion Sort",
+						    "Selection Sort",
+						    "Bubble Sort   ",
+						    "Quick Sort    " };
+
+	//Create window outline and draw 
+	int selection = 0;
+	WINDOW* sort_selection_window = outputSorterSelections(sorters, selection);
+	wrefresh(sort_selection_window);
+
+	//Loop until newline is entered
+	int user_input = 0;
+
+	while (user_input != NEWLINE)
+	{
+		user_input = getch();
+
+		switch (user_input)
+		{
+		//If not in first position, move selection up
+		case KEY_UP:
+			if (selection == 0)
+			{
+				break;
+			}
+			else
+			{
+				selection--;
+				sort_selection_window = outputSorterSelections(sorters, selection);
+				wrefresh(sort_selection_window);
+				break;
+			}
+
+		//If not in last position, move selection down
+		case KEY_DOWN:
+			if (selection == 3)
+			{
+				break;
+			}
+			else
+			{
+				selection++;
+				sort_selection_window = outputSorterSelections(sorters, selection);
+				wrefresh(sort_selection_window);
+				break;
+			}
+
+		default:
+			break;
+		}
+	}
+
+	//Run sort based on user input
+	if (selection == 0)
+	{
+		insertionSortDisplay(input_window, words);
+	}
+	else if (selection == 1)
+	{
+		selectionSortDisplay(input_window, words);
+	}
+	else if (selection == 2)
+	{
+		bubbleSortDisplay(input_window, words);
+	}
+	else if (selection == 3)
+	{
+		quickSortDisplay(input_window, words);
+	}
 
 	ofstream sorted_output_file{ "test_output_sorted.txt" };
 
 	writeOutSorted(sorted_output_file, words);
 
 	return;
-}
-
-void insertionSortDisplay(WINDOW* input_window, vector<string>& words)
-{
-	for (int i = 1; i < words.size(); i++)
-	{
-		for (int j = i; j > 0; j--)
-		{
-			if (words[j] < words[j - 1])
-			{
-				string temp = words[j];
-				words[j] = words[j - 1];
-				words[j - 1] = temp;
-			}
-			else
-			{
-				break;
-			}
-
-			//Outputs current sorted state
-			outputWordsToWindow(input_window, words);
-		}
-	}
-
-	return;
-}
-
-void outputWordsToWindow(WINDOW* input_window, const vector<string>& words)
-{
-	wclear(input_window);
-
-	for (int i = 0; i < words.size(); i++)
-	{
-		waddstr(input_window, words[i].c_str());
-		waddch(input_window, ' ');
-	}
-
-	wrefresh(input_window);
-
-	return;
-}
-
-vector<string> grabWords(const vector<vector<chtype>>& text)
-{
-	vector<string> words{};
-	string current_word = "";
-	char current_ch = '/0';
-
-	for (int i = 0; i < text.size(); i++)
-	{
-		for (int j = 0; j < text[i].size(); j++)
-		{
-			current_ch = chtypeToChar(text[i][j]);
-
-			//If character is a letter, push it to word
-			if (isLetter(current_ch))
-			{
-				current_word.push_back(current_ch);
-			}
-			//Otherwise push word to vector
-			else if (!current_word.empty())
-			{
-				words.push_back(current_word);
-				current_word.clear();
-			}
-		}
-	}
-
-	return words;
 }
